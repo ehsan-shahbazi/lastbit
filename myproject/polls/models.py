@@ -351,6 +351,6 @@ class Activity(models.Model):
     mat_amount = models.FloatField(name='mat_amount', default=0)
 
     def __str__(self):
-        return self.action + ' ' + str(self.trader.user.name) + str(self.date_time)
+        return self.action + '---' + str(self.date_time) + '---' + str(self.price)
 
 
