@@ -33,31 +33,33 @@ class Finance(models.Model):
         timestamp = client.get_server_time()
         return int(timestamp['serverTime']) / 1000
 
-    def buy(self, percent=100):
+    def buy(self, price, percent=0.9):
         """
-
+        :param price: the last price of bitcoin
         :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        quantity = balance * percent / price
+        quantity = round(quantity, 6)
         order = client.order_market_buy(
             symbol=self.symbol,
-            quantity=percent)
+            quantity=quantity)
         return
 
-    def sell(self, percent=100):
+    def sell(self, percent=0.9):
         """
-
         :param percent: how much of your asset do you want to sell? 100 mean all of that
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-
+        balance = float(client.get_asset_balance(asset='BTC')['free'])
+        quantity = balance * percent
+        quantity = round(quantity, 6)
         order = client.order_market_sell(
             symbol=self.symbol,
-            quantity=percent)
-
+            quantity=quantity)
         return
 
     def get_price(self):
@@ -299,14 +301,14 @@ class Trader(models.Model):
 
     def buy(self, close):
         speaker = self.user.finance_set.all()[0]
-        if self.active:
-            if self.type == '1':
-                speaker.buy()
         price = speaker.get_price()
         if price:
             price = price
         else:
             price = close
+        if self.active:
+            if self.type == '1':
+                speaker.buy(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
@@ -320,14 +322,14 @@ class Trader(models.Model):
 
     def sell(self, close):
         speaker = self.user.finance_set.all()[0]
-        if self.active:
-            if self.type == '1':
-                speaker.sell()
         price = speaker.get_price()
         if price:
             price = price
         else:
             price = close
+        if self.active:
+            if self.type == '1':
+                speaker.buy(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
