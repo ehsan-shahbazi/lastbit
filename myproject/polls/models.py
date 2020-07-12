@@ -43,7 +43,9 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / price
         quantity = round(quantity, 6)
+        print(quantity)
         if quantity > 0.001:
+            print('order sent')
             order = client.order_market_buy(
                 symbol=self.symbol,
                 quantity=quantity)
@@ -58,7 +60,9 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
         quantity = round(quantity, 6)
+        print(quantity)
         if quantity > 0.001:
+            print('order sent')
             order = client.order_market_sell(
                 symbol=self.symbol,
                 quantity=quantity)
@@ -310,6 +314,7 @@ class Trader(models.Model):
             price = close
         if self.active:
             if self.type == '1':
+                print('the trader is active and type is 1')
                 speaker.buy(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
@@ -331,7 +336,8 @@ class Trader(models.Model):
             price = close
         if self.active:
             if self.type == '1':
-                speaker.buy(price, percent=0.95)
+                print('the trader is active and type is 1')
+                speaker.sell(percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
