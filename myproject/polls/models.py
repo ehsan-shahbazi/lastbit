@@ -43,9 +43,10 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / price
         quantity = round(quantity, 6)
-        order = client.order_market_buy(
-            symbol=self.symbol,
-            quantity=quantity)
+        if quantity > 0.001:
+            order = client.order_market_buy(
+                symbol=self.symbol,
+                quantity=quantity)
         return
 
     def sell(self, percent=0.9):
@@ -57,9 +58,10 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
         quantity = round(quantity, 6)
-        order = client.order_market_sell(
-            symbol=self.symbol,
-            quantity=quantity)
+        if quantity > 0.001:
+            order = client.order_market_sell(
+                symbol=self.symbol,
+                quantity=quantity)
         return
 
     def get_price(self):
