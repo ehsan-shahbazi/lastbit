@@ -46,7 +46,7 @@ if __name__ == '__main__':
         client = Client(user.api_key, user.secret_key)
         finance = user.finance_set.all()[0]
         timestamp = finance.get_time()
-        # wait_until(timestamp)
+        wait_until(timestamp)
         timestamp = finance.get_time()
         # print(timestamp)
         # print(client.get_server_time())
