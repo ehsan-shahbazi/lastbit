@@ -5,7 +5,29 @@ import joblib
 import ta
 import numpy as np
 from binance.client import Client
+from talib._ta_lib import *
 # Create your models here.
+
+
+def make_all_ta_things(df):
+    my_open = np.array(df['Open'])
+    close = np.array(df['Close'])
+    high = np.array(df['High'])
+    low = np.array(df['Low'])
+    volume = np.array(df['Volume'])
+    the_dict = dict()
+    the_dict['Open'] = list(my_open)
+    the_dict['Close'] = list(close)
+    the_dict['High'] = list(high)
+    the_dict['Low'] = list(low)
+    the_dict['Volume'] = list(volume)
+    the_dict['MACD3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[0])
+    the_dict['MACD_SIGNAL3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[1])
+    the_dict['MACD_HIST3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[2])
+    ans = pd.DataFrame.from_dict(the_dict).fillna(0)
+    print(ans)
+    print('MAC')
+    return ans
 
 
 class User(models.Model):
@@ -205,8 +227,7 @@ class Predictor(models.Model):
     upper = models.FloatField(name='upper', default=0)
     lower = models.FloatField(name='lower', default=0)
 
-    @staticmethod
-    def make_inputs(df):
+    def make_inputs(self, df):
         """
 
         :param df: It should have just OCHLV and in string
@@ -218,13 +239,18 @@ class Predictor(models.Model):
         df['Low'] = pd.to_numeric(df['Low'])
         df['High'] = pd.to_numeric(df['High'])
         df['Volume'] = pd.to_numeric(df['Volume'])
-        df = ta.add_all_ta_features(df, open="Open", high="High", low="Low", close="Close",
-                                    volume="Volume", fillna=True)
         inputs = []
-        for index, data in df.iterrows():
-            # print(list(data))
-
-            inputs.append(list(data))
+        if self.type == 'DT':
+            df = ta.add_all_ta_features(df, open="Open", high="High", low="Low", close="Close",
+                                        volume="Volume", fillna=True)
+            for index, data in df.iterrows():
+                # print(list(data))
+                inputs.append(list(data))
+        elif self.type == 'MAD':
+            df = make_all_ta_things(df)
+            print(df.head())
+            for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
+                inputs.append([data])
         return inputs
 
     def predict(self, df='', gamma=0.65):
@@ -235,17 +261,24 @@ class Predictor(models.Model):
         """
         tree1 = joblib.load(self.model_dir)
         the_input = self.make_inputs(df)
-        temp = tree1.predict_proba(the_input)
-        classes = tree1.classes_
-        predictions = []
-        for i in temp:
-            pred_idx = np.argmax(i)
-            if max(i) >= gamma:
-                predictions.append(classes[pred_idx])
-            else:
-                predictions.append(0)
+        if self.type == 'MAD':
+            predictions = tree1.predict(the_input)
 
-        print('prediction is: \n', predictions[-1])
+        elif self.type == 'DT':
+            temp = tree1.predict_proba(the_input)
+            classes = tree1.classes_
+            predictions = []
+            for i in temp:
+                pred_idx = np.argmax(i)
+                if max(i) >= gamma:
+                    predictions.append(classes[pred_idx])
+                else:
+                    predictions.append(0)
+
+            print('prediction is: \n', predictions[-1])
+        else:
+            predictions = [0]
+
         return predictions[-1]
 
 
