@@ -46,13 +46,13 @@ if __name__ == '__main__':
         client = Client(user.api_key, user.secret_key)
         finance = user.finance_set.all()[0]
         timestamp = finance.get_time()
-        wait_until(timestamp)
+        wait_until(timestamp, secs=-2)
         # timestamp = finance.get_time()
         # print(timestamp)
         # print(client.get_server_time())
         for predictor in predictors:
             df = finance.give_ohlcv(interval=predictor.time_frame, size=500)
-            # print(df.head())
+            print(df.head())
             last = df.tail(1)
             close = float(last['Close'])
             print('the price is:', close)

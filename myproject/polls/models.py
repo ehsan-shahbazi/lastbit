@@ -255,7 +255,7 @@ class Predictor(models.Model):
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
         print('and inputs are:')
-        print(inputs)
+        print(inputs[-20:])
         print('we had: ', len(inputs), ' inputs')
         return inputs
 
@@ -286,10 +286,10 @@ class Predictor(models.Model):
         else:
             print('NO mode')
             predictions = [0]
-        print('all predictions are: ', predictions)
+        print('all predictions are: ', predictions[-20:])
         print('we have ', len(predictions), ' predictions')
-        print('current prediction is: ', predictions[-1])
-        return predictions[-1]
+        print('current prediction is: ', predictions[-2])
+        return predictions[-2]
 
 
 class Trader(models.Model):
