@@ -183,6 +183,9 @@ class Finance(models.Model):
         elif interval == '1m':
             my_interval = Client.KLINE_INTERVAL_1MINUTE
             limit = (size + 1) * 60
+        elif interval == '5m':
+            my_interval = Client.KLINE_INTERVAL_5MINUTE
+            limit = (size + 1)
         else:
             return False
         candles = client.get_klines(symbol=self.symbol, interval=my_interval, limit=limit)
