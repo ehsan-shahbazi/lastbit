@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block body-content %}
+<div>
+<canvas id="myChart" width="400" height="400"></canvas>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
+
+    // The data for our dataset
+    data: {
+        labels: {{labels}},
+        datasets: [{
+            label: 'The price',
+            backgroundColor: 'rgb(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132, 0.8)',
+            data: {{data}}
+        },
+        {
+            label: 'The asset',
+            backgroundColor: 'rgb(55, 199, 32, 0.2)',
+            borderColor: 'rgb(55, 199, 32, 0.8)',
+            data: {{asset}}
+        }]
+    },
+
+    // Configuration options go here
+    options: {}
+    });
+</script>
+</div>
+{% endblock %}
+</body>
+</html>
