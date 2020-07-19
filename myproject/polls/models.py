@@ -254,6 +254,9 @@ class Predictor(models.Model):
             print(df.head())
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
+        print('and inputs are:')
+        print(inputs)
+        print('we had: ', len(inputs), ' inputs')
         return inputs
 
     def predict(self, df='', gamma=0.65):
@@ -265,23 +268,27 @@ class Predictor(models.Model):
         tree1 = joblib.load(self.model_dir)
         the_input = self.make_inputs(df)
         if self.type == 'MAD':
+            print('MAD mode')
             predictions = tree1.predict(the_input)
 
         elif self.type == 'DT':
+            print('DT mode')
             temp = tree1.predict_proba(the_input)
             classes = tree1.classes_
             predictions = []
-            for i in temp:
-                pred_idx = np.argmax(i)
-                if max(i) >= gamma:
+            for the_i in temp:
+                pred_idx = np.argmax(the_i)
+                if max(the_i) >= gamma:
                     predictions.append(classes[pred_idx])
                 else:
                     predictions.append(0)
 
-            print('prediction is: \n', predictions[-1])
         else:
+            print('NO mode')
             predictions = [0]
-
+        print('all predictions are: ', predictions)
+        print('we have ', len(predictions), ' predictions')
+        print('current prediction is: ', predictions[-1])
         return predictions[-1]
 
 
