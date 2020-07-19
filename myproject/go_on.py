@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # print(client.get_server_time())
         for predictor in predictors:
             df = finance.give_ohlcv(interval=predictor.time_frame, size=500)
-            print(df.head())
+            # print(df.head())
             last = df.tail(1)
             close = float(last['Close'])
             print('the price is:', close)

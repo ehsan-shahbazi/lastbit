@@ -251,7 +251,7 @@ class Predictor(models.Model):
                 inputs.append(list(data))
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
-            print(df.head())
+            # print(df.head())
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
         print('and inputs are:')
