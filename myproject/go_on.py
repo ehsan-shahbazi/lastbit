@@ -13,15 +13,15 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=60):
+def wait_until(time_stamp, secs=5):
     time_stamp = int(time_stamp)
     print('timestamp:', timestamp)
-    sleep = int(3600 - ((time_stamp/3600) - int(time_stamp/3600)) * 3600) - secs
+    sleep = int(300 - ((time_stamp/300) - int(time_stamp/300)) * 300) - secs
     print('sleep for:', sleep)
     if sleep > 0:
         time.sleep(sleep)
     else:
-        time.sleep(sleep + 3600)
+        time.sleep(sleep + 300)
     return True
 
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         finance = user.finance_set.all()[0]
         timestamp = finance.get_time()
         wait_until(timestamp)
-        timestamp = finance.get_time()
+        # timestamp = finance.get_time()
         # print(timestamp)
         # print(client.get_server_time())
         for predictor in predictors:
