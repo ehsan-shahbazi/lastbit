@@ -58,7 +58,7 @@ if __name__ == '__main__':
         # print(timestamp)
         # print(client.get_server_time())
         for predictor in predictors:
-            df = finance.give_ohlcv(interval=predictor.time_frame, size=1000)
+            df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
             print(df.tail()[['Close']])
             last = df.tail(1)
             close = float(last['Close'])
