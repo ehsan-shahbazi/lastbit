@@ -6,6 +6,7 @@ import ta
 import numpy as np
 from binance.client import Client
 from talib._ta_lib import *
+from binance.enums import *
 # Create your models here.
 
 
@@ -38,11 +39,22 @@ class Histogram:
         """
         :param df: numeric OHLCV
         """
+        self.state = 'DON\'T MOVE!'
         self.prices = list(df['Close'])
         self.highs = list(df['High'])
         self.lows = list(df['Low'])
         self.volumes = list(df['Volume'])
         self.strategy = [{'STOP': (-0.80, 0.80), 'BUY': (0.99, 1), 'SELL': (0, 0.5)}]
+
+    def stop_loss(self, start_alpha, stop_alpha):
+        hist = self.prices
+        hist.sort()
+        tot = len(hist)
+        stop_index = int((tot + 1) * stop_alpha)
+        start_index = int((tot + 1) * start_alpha)
+        stop_price = hist[stop_index]
+        start_price = hist[start_index]
+        return {'stop_price': stop_price, 'start_price': start_price}
 
     def decision(self):
         hist = self.prices
@@ -64,14 +76,17 @@ class Histogram:
                 j += 1
 
         alpha = pi / tot
+        output = []
 
         for one_strategy in the_strategy:
             if (alpha <= one_strategy['BUY'][1]) & (alpha >= one_strategy['BUY'][0]):
-                return 'BUY', one_strategy['STOP']
+                output.append('BUY')
             elif (alpha <= one_strategy['SELL'][1]) & (alpha >= one_strategy['SELL'][0]):
-                return 'SELL', one_strategy['STOP']
+                output.append('SELL')
             else:
-                return 'DON\'T MOVE!', one_strategy['STOP']
+                output.append('DON\'T MOVE!')
+        output.append(self.stop_loss(0.98, 0.5))
+        return output
 
 
 class User(models.Model):
@@ -99,7 +114,17 @@ class Finance(models.Model):
         timestamp = client.get_server_time()
         return int(timestamp['serverTime']) / 1000
 
-    def buy(self, price, percent=0.9):
+    def have_btc(self):
+        """
+        :return: if we have btc then returns true else false
+        """
+        client = Client(self.user.api_key, self.user.secret_key)
+        usd = float(client.get_asset_balance(asset='USDT')['free'])
+        btc = float(client.get_asset_balance(asset='BTC')['free'])
+        price = self.get_price()
+        return usd > (btc * price)
+
+    def buy(self, price, percent=0.95):
         """
         :param price: the last price of bitcoin
         :param percent: how much of your budget do you want to buy? 100 mean all of that
@@ -117,7 +142,7 @@ class Finance(models.Model):
                 quantity=quantity)
         return
 
-    def sell(self, percent=0.9):
+    def sell(self, percent=0.95):
         """
         :param percent: how much of your asset do you want to sell? 100 mean all of that
         :return:
@@ -142,33 +167,46 @@ class Finance(models.Model):
                 return float(order['price'])
         return False
 
-    def buy_limit(self, limit, percent=100):
+    def buy_limit(self, limit, percent=0.95):
         """
-        :param limit: in witch cost do you want to buy
+        :param limit: the limit of bitcoin
         :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        quantity = balance * percent / limit
+        quantity = round(quantity, 6)
+        print(quantity)
+        if quantity > 0.001:
+            print('order sent')
+            order = client.order_limit_buy(
+                symbol=self.symbol,
+                quantity=percent,
+                price=str(limit))
 
-        order = client.order_limit_buy(
-            symbol=self.symbol,
-            quantity=percent,
-            price=str(limit))
+        return
 
-    def sell_limit(self, limit, percent=100):
+    def sell_limit(self, limit, percent=0.95):
         """
-        :param limit: in witch cost do you want to sell
-        :param percent: how much of your asset do you want to sell? 100 mean all of that
+        :param limit: the limit of bitcoin
+        :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
+        balance = float(client.get_asset_balance(asset='BTC')['free'])
+        quantity = balance * percent
+        quantity = round(quantity, 6)
+        print(quantity)
+        if quantity > 0.001:
+            print('order sent')
+            order = client.order_limit_sell(
+                symbol=self.symbol,
+                quantity=percent,
+                price=str(limit))
+        return
 
-        order = client.order_limit_sell(
-            symbol=self.symbol,
-            quantity=percent,
-            price=str(limit))
-
-    def buy_stop(self, stop, percent=100):
+    def buy_stop(self, stop, percent=0.95):
         """
 
         :param stop: the price of stop
@@ -176,17 +214,23 @@ class Finance(models.Model):
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-        """
-        order = client.create_oco_order(
-            symbol=self.symbol,
-            side=SIDE_BUY,
-            stopLimitTimeInForce=TIME_IN_FORCE_GTC,
-            quantity=percent,
-            stopPrice=str(stop),
-            price=str(stop))"""
-        return True
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        quantity = balance * percent / stop
+        quantity = round(quantity, 6)
+        print(quantity)
+        if quantity > 0.001:
+            print('order sent')
+            order = client.create_oco_order(
+                symbol=self.symbol,
+                side=SIDE_BUY,
+                stopLimitTimeInForce=TIME_IN_FORCE_GTC,
+                quantity=percent,
+                stopPrice=str(stop),
+                price=str(stop))
+            return True
+        return False
 
-    def sell_stop(self, stop, percent=100):
+    def sell_stop(self, stop, percent=0.95):
         """
 
         :param stop: the price of stop
@@ -194,20 +238,25 @@ class Finance(models.Model):
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-        """
-        order = client.create_oco_order(
-            symbol=self.symbol,
-            side=SIDE_SELL,
-            stopLimitTimeInForce=TIME_IN_FORCE_GTC,
-            quantity=percent,
-            stopPrice=str(stop),
-            price=str(stop))"""
-        return True
+        balance = float(client.get_asset_balance(asset='BTC')['free'])
+        quantity = balance * percent
+        quantity = round(quantity, 6)
+        print(quantity)
+        if quantity > 0.001:
+            print('order sent')
+            order = client.create_oco_order(
+                symbol=self.symbol,
+                side=SIDE_SELL,
+                stopLimitTimeInForce=TIME_IN_FORCE_GTC,
+                quantity=percent,
+                stopPrice=str(stop),
+                price=str(stop))
+            return True
+        return False
 
-    def cancel_stop(self):
+    def cancel_all_orders(self):
 
         client = Client(self.user.api_key, self.user.secret_key)
-
         orders = client.get_open_orders(symbol=self.symbol)
         for order in orders:
             if order['symbol'] == self.symbol:
@@ -404,10 +453,20 @@ class Trader(models.Model):
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
                 self.buy(close)
+                self.cancel_all()
+                self.limit_buy(prediction[1]['start_price'])
+                self.stop_sell(prediction[1]['stop_price'])
                 print('BUY')
             elif prediction[0] == 'SELL':
                 self.sell(close)
+                self.cancel_all()
+                self.limit_buy(prediction[1]['start_price'])
+                self.stop_sell(prediction[1]['stop_price'])
                 print('SELL')
+            else:
+                self.cancel_all()
+                self.limit_buy(prediction[1]['start_price'])
+                self.stop_sell(prediction[1]['stop_price'])
             return True
 
         if prediction > self.predictor.upper:
@@ -459,6 +518,55 @@ class Trader(models.Model):
         record = Activity(trader=self, action='sell', date_time=timezone.now(), real=self.active, price=close,
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
+
+    def cancel_all(self):
+        speaker = self.user.finance_set.all()[0]
+        speaker.cancel_all_orders()
+        return True
+
+    def limit_buy(self, limit):
+        speaker = self.user.finance_set.all()[0]
+        price = limit
+        if self.active:
+            if self.type == '1':
+                print('the trader is active and type is 1')
+                speaker.buy_limit(price, percent=0.95)
+        mat = self.predictor.material
+        mat.price = price
+        mat.save()
+
+    def limit_sell(self, limit):
+        speaker = self.user.finance_set.all()[0]
+        price = limit
+        if self.active:
+            if self.type == '1':
+                print('the trader is active and type is 1')
+                speaker.sell_limit(price, percent=0.95)
+        mat = self.predictor.material
+        mat.price = price
+        mat.save()
+
+    def stop_buy(self, limit):
+        speaker = self.user.finance_set.all()[0]
+        price = limit
+        if self.active:
+            if self.type == '1':
+                print('the trader is active and type is 1')
+                speaker.buy_stop(price, percent=0.95)
+        mat = self.predictor.material
+        mat.price = price
+        mat.save()
+
+    def stop_sell(self, limit):
+        speaker = self.user.finance_set.all()[0]
+        price = limit
+        if self.active:
+            if self.type == '1':
+                print('the trader is active and type is 1')
+                speaker.sell_stop(price, percent=0.95)
+        mat = self.predictor.material
+        mat.price = price
+        mat.save()
 
 
 class Activity(models.Model):
