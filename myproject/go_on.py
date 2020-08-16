@@ -53,7 +53,7 @@ if __name__ == '__main__':
         client = Client(user.api_key, user.secret_key)
         finance = user.finance_set.all()[0]
         timestamp = finance.get_time()
-        wait_until(timestamp, secs=-2)
+        wait_until(timestamp, secs=10)
         # timestamp = finance.get_time()
         # print(timestamp)
         # print(client.get_server_time())
