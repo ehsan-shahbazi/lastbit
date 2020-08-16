@@ -13,15 +13,22 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=5):
+def wait_until(time_stamp, secs=5, time_step=10):
+    """
+    :param time_stamp: coming from the server
+    :param secs: how many seconds should we start before new minute starts
+    :param time_step: how many minutes should we wait each time?
+    :return:
+    """
     time_stamp = int(time_stamp)
     print('timestamp:', timestamp)
-    sleep = int(300 - ((time_stamp/300) - int(time_stamp/300)) * 300) - secs
+    sleep = int((60 * time_step) - ((time_stamp/(60 * time_step)) -
+                                    int(time_stamp/(60 * time_step))) * (60 * time_step)) - secs
     print('sleep for:', sleep)
     if sleep > 0:
         time.sleep(sleep)
     else:
-        time.sleep(sleep + 300)
+        time.sleep(sleep + (60 * time_step))
     return True
 
 
@@ -51,8 +58,8 @@ if __name__ == '__main__':
         # print(timestamp)
         # print(client.get_server_time())
         for predictor in predictors:
-            df = finance.give_ohlcv(interval=predictor.time_frame, size=500)
-            print(df.head())
+            df = finance.give_ohlcv(interval=predictor.time_frame, size=1000)
+            print(df.tail()[['Close']])
             last = df.tail(1)
             close = float(last['Close'])
             print('the price is:', close)

@@ -24,10 +24,54 @@ def make_all_ta_things(df):
     the_dict['MACD3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[0])
     the_dict['MACD_SIGNAL3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[1])
     the_dict['MACD_HIST3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[2])
+    here = ta.trend.MACD(pd.Series(close), 26, 12, 1).macd_signal()
+    print('we have from ta:')
+    print(here)
+    print('-' * 50)
     ans = pd.DataFrame.from_dict(the_dict).fillna(0)
     print(ans)
-    print('MAC')
     return ans
+
+
+class Histogram:
+    def __init__(self, df):
+        """
+        :param df: numeric OHLCV
+        """
+        self.prices = list(df['Close'])
+        self.highs = list(df['High'])
+        self.lows = list(df['Low'])
+        self.volumes = list(df['Volume'])
+        self.strategy = [{'STOP': (-0.80, 0.80), 'BUY': (0.99, 1), 'SELL': (0, 0.5)}]
+
+    def decision(self):
+        hist = self.prices
+        the_strategy = self.strategy
+        price = hist[-1]
+        """
+        :param hist: [price1, price2, price3, ...]
+        :param price: current price
+        :param the_strategy: self.strategy
+        :return: 'ACTION', (stop_minus, stop_plus)
+        """
+        pi = 0  # more than current price
+        j = 0  # less than current price
+        tot = len(hist)
+        for index in range(tot):
+            if hist[index] < price:
+                pi += 1
+            else:
+                j += 1
+
+        alpha = pi / tot
+
+        for one_strategy in the_strategy:
+            if (alpha <= one_strategy['BUY'][1]) & (alpha >= one_strategy['BUY'][0]):
+                return 'BUY', one_strategy['STOP']
+            elif (alpha <= one_strategy['SELL'][1]) & (alpha >= one_strategy['SELL'][0]):
+                return 'SELL', one_strategy['STOP']
+            else:
+                return 'DON\'T MOVE!', one_strategy['STOP']
 
 
 class User(models.Model):
@@ -249,11 +293,14 @@ class Predictor(models.Model):
             for index, data in df.iterrows():
                 # print(list(data))
                 inputs.append(list(data))
+        elif self.type == 'HIST':
+            return df
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
-            # print(df.head())
+            print(df.tail())
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
+
         print('and inputs are:')
         print(inputs[-20:])
         print('we had: ', len(inputs), ' inputs')
@@ -265,31 +312,41 @@ class Predictor(models.Model):
         :param: df: the df should be appropriated for prediction in size and time framing
         :return:
         """
-        tree1 = joblib.load(self.model_dir)
-        the_input = self.make_inputs(df)
-        if self.type == 'MAD':
-            print('MAD mode')
-            predictions = tree1.predict(the_input)
+        if self.type != 'HIST':
 
-        elif self.type == 'DT':
-            print('DT mode')
-            temp = tree1.predict_proba(the_input)
-            classes = tree1.classes_
-            predictions = []
-            for the_i in temp:
-                pred_idx = np.argmax(the_i)
-                if max(the_i) >= gamma:
-                    predictions.append(classes[pred_idx])
-                else:
-                    predictions.append(0)
+            tree1 = joblib.load(self.model_dir)
+            the_input = self.make_inputs(df)
+            if self.type == 'MAD':
+                print('MAD mode')
+                predictions = tree1.predict(the_input)
+
+            elif self.type == 'DT':
+                print('DT mode')
+                temp = tree1.predict_proba(the_input)
+                classes = tree1.classes_
+                predictions = []
+                for the_i in temp:
+                    pred_idx = np.argmax(the_i)
+                    if max(the_i) >= gamma:
+                        predictions.append(classes[pred_idx])
+                    else:
+                        predictions.append(0)
+
+            else:
+                print('NO mode')
+                predictions = [0]
+            print('all predictions are: ', predictions[-20:])
+            print('we have ', len(predictions), ' predictions')
+            print('current prediction is: ', predictions[-2])
+            return predictions[-2]
 
         else:
-            print('NO mode')
-            predictions = [0]
-        print('all predictions are: ', predictions[-20:])
-        print('we have ', len(predictions), ' predictions')
-        print('current prediction is: ', predictions[-2])
-        return predictions[-2]
+            """
+            We need a class called histogram witch has predict and 
+            """
+            df = self.make_inputs(df)
+            tree1 = Histogram(df)
+            return tree1.decision()
 
 
 class Trader(models.Model):
@@ -341,6 +398,15 @@ class Trader(models.Model):
     def trade(self, close, df=''):
         prediction = self.predictor.predict(df)
         print('prediction is:', prediction)
+        if self.predictor.type == 'HIST':
+            if prediction[0] == 'BUY':
+                self.buy(close)
+                print('BUY')
+            elif prediction[0] == 'SELL':
+                self.sell(close)
+                print('SELL')
+            return True
+
         if prediction > self.predictor.upper:
             self.buy(close)
             print('BUY')
