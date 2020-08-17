@@ -236,6 +236,7 @@ class Finance(models.Model):
                     symbol=self.symbol,
                     type='STOP_LOSS_LIMIT',
                     side=SIDE_BUY,
+                    timeInForce='GTC',
                     quantity=quantity,
                     stopPrice=str(stop),
                     price=str(stop))
@@ -263,6 +264,7 @@ class Finance(models.Model):
                     side=SIDE_SELL,
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
+                    timeInForce='GTC',
                     stopPrice=str(stop),
                     price=str(stop))
             return True
