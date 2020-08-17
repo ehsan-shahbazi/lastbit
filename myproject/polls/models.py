@@ -182,7 +182,7 @@ class Finance(models.Model):
             print('order sent')
             order = client.order_limit_buy(
                 symbol=self.symbol,
-                quantity=percent,
+                quantity=quantity,
                 price=str(limit))
 
         return
@@ -202,7 +202,7 @@ class Finance(models.Model):
             print('order sent')
             order = client.order_limit_sell(
                 symbol=self.symbol,
-                quantity=percent,
+                quantity=quantity,
                 price=str(limit))
         return
 
@@ -224,7 +224,7 @@ class Finance(models.Model):
                 symbol=self.symbol,
                 side=SIDE_BUY,
                 stopLimitTimeInForce=TIME_IN_FORCE_GTC,
-                quantity=percent,
+                quantity=quantity,
                 stopPrice=str(stop),
                 price=str(stop))
             return True
@@ -248,7 +248,7 @@ class Finance(models.Model):
                 symbol=self.symbol,
                 side=SIDE_SELL,
                 stopLimitTimeInForce=TIME_IN_FORCE_GTC,
-                quantity=percent,
+                quantity=quantity,
                 stopPrice=str(stop),
                 price=str(stop))
             return True
