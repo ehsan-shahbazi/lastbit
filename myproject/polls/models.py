@@ -267,6 +267,7 @@ class Finance(models.Model):
         return False
 
     def cancel_all_orders(self):
+        print('hihihihihi')
         print('cancel all')
         client = Client(self.user.api_key, self.user.secret_key)
         orders = client.get_open_orders(symbol=self.symbol)
