@@ -130,6 +130,7 @@ class Finance(models.Model):
         :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
+        print('buy')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / price
@@ -148,6 +149,7 @@ class Finance(models.Model):
         :param percent: how much of your asset do you want to sell? 100 mean all of that
         :return:
         """
+        print('sell')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
@@ -175,6 +177,7 @@ class Finance(models.Model):
         :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
+        print('limit buy')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / limit
@@ -196,6 +199,7 @@ class Finance(models.Model):
         :param percent: how much of your budget do you want to buy? 100 mean all of that
         :return:
         """
+        print('limit sell')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
@@ -217,9 +221,11 @@ class Finance(models.Model):
         :param percent: how much of the budget? 100 means all of it
         :return:
         """
+        print('buy stop')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         print(balance, percent, stop)
+        input()
         quantity = balance * percent / stop
         quantity = round(quantity, 6)
         print(quantity)
@@ -242,6 +248,7 @@ class Finance(models.Model):
         :param percent: how much of the asset? 100 means all of it
         :return:
         """
+        print('sell stop')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
@@ -260,7 +267,7 @@ class Finance(models.Model):
         return False
 
     def cancel_all_orders(self):
-
+        print('cancel all')
         client = Client(self.user.api_key, self.user.secret_key)
         orders = client.get_open_orders(symbol=self.symbol)
         for order in orders:
