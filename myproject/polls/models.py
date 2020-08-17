@@ -219,6 +219,7 @@ class Finance(models.Model):
         """
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
+        print(balance, percent, stop)
         quantity = balance * percent / stop
         quantity = round(quantity, 6)
         print(quantity)
