@@ -223,7 +223,6 @@ class Finance(models.Model):
             order = client.create_oco_order(
                 symbol=self.symbol,
                 side=SIDE_BUY,
-                stopLimitTimeInForce=TIME_IN_FORCE_GTC,
                 quantity=quantity,
                 stopPrice=str(stop),
                 price=str(stop))
@@ -247,7 +246,6 @@ class Finance(models.Model):
             order = client.create_oco_order(
                 symbol=self.symbol,
                 side=SIDE_SELL,
-                stopLimitTimeInForce=TIME_IN_FORCE_GTC,
                 quantity=quantity,
                 stopPrice=str(stop),
                 price=str(stop))
