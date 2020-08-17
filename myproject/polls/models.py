@@ -137,9 +137,10 @@ class Finance(models.Model):
         print(quantity)
         if quantity > 0.001:
             print('order sent')
-            order = client.order_market_buy(
-                symbol=self.symbol,
-                quantity=quantity)
+            if not self.have_btc():
+                order = client.order_market_buy(
+                    symbol=self.symbol,
+                    quantity=quantity)
         return
 
     def sell(self, percent=0.95):
@@ -154,9 +155,10 @@ class Finance(models.Model):
         print(quantity)
         if quantity > 0.001:
             print('order sent')
-            order = client.order_market_sell(
-                symbol=self.symbol,
-                quantity=quantity)
+            if self.have_btc():
+                order = client.order_market_sell(
+                    symbol=self.symbol,
+                    quantity=quantity)
         return
 
     def get_price(self):
@@ -180,10 +182,11 @@ class Finance(models.Model):
         print(quantity)
         if quantity > 0.001:
             print('order sent')
-            order = client.order_limit_buy(
-                symbol=self.symbol,
-                quantity=quantity,
-                price=str(limit))
+            if not self.have_btc():
+                order = client.order_limit_buy(
+                    symbol=self.symbol,
+                    quantity=quantity,
+                    price=str(limit))
 
         return
 
@@ -199,11 +202,12 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            print('order sent')
-            order = client.order_limit_sell(
-                symbol=self.symbol,
-                quantity=quantity,
-                price=str(limit))
+            if self.have_btc():
+                print('order sent')
+                order = client.order_limit_sell(
+                    symbol=self.symbol,
+                    quantity=quantity,
+                    price=str(limit))
         return
 
     def buy_stop(self, stop, percent=0.95):
@@ -219,13 +223,14 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            print('order sent')
-            order = client.create_oco_order(
-                symbol=self.symbol,
-                side=SIDE_BUY,
-                quantity=quantity,
-                stopPrice=str(stop),
-                price=str(stop))
+            if not self.have_btc():
+                print('order sent')
+                order = client.create_oco_order(
+                    symbol=self.symbol,
+                    side=SIDE_BUY,
+                    quantity=quantity,
+                    stopPrice=str(stop),
+                    price=str(stop))
             return True
         return False
 
@@ -242,13 +247,14 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            print('order sent')
-            order = client.create_oco_order(
-                symbol=self.symbol,
-                side=SIDE_SELL,
-                quantity=quantity,
-                stopPrice=str(stop),
-                price=str(stop))
+            if self.have_btc():
+                print('order sent')
+                order = client.create_oco_order(
+                    symbol=self.symbol,
+                    side=SIDE_SELL,
+                    quantity=quantity,
+                    stopPrice=str(stop),
+                    price=str(stop))
             return True
         return False
 
@@ -450,21 +456,29 @@ class Trader(models.Model):
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
-                self.buy(close)
-                self.cancel_all()
-                self.limit_buy(prediction[1]['start_price'])
-                self.stop_sell(prediction[1]['stop_price'])
+                if self.have_btc():
+                    self.cancel_all()
+                    self.stop_sell(prediction[1]['stop_price'])
+                else:
+                    self.buy(close)
+                    self.cancel_all()
+                    self.stop_sell(prediction[1]['stop_price'])
                 print('BUY')
             elif prediction[0] == 'SELL':
-                self.sell(close)
-                self.cancel_all()
-                self.limit_buy(prediction[1]['start_price'])
-                self.stop_sell(prediction[1]['stop_price'])
+                if self.have_btc():
+                    self.sell(close)
+                    self.cancel_all()
+                    self.stop_buy(prediction[1]['start_price'])
+                else:
+                    self.cancel_all()
+                    self.stop_buy(prediction[1]['start_price'])
                 print('SELL')
             else:
                 self.cancel_all()
-                self.limit_buy(prediction[1]['start_price'])
-                self.stop_sell(prediction[1]['stop_price'])
+                if self.have_btc():
+                    self.stop_sell(prediction[1]['stop_price'])
+                else:
+                    self.stop_buy(prediction[1]['start_price'])
             return True
 
         if prediction > self.predictor.upper:
@@ -554,6 +568,10 @@ class Trader(models.Model):
         mat = self.predictor.material
         mat.price = price
         mat.save()
+
+    def have_btc(self):
+        speaker = self.user.finance_set.all()[0]
+        return speaker.have_btc()
 
     def stop_sell(self, limit):
         speaker = self.user.finance_set.all()[0]
