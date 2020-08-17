@@ -122,7 +122,7 @@ class Finance(models.Model):
         usd = float(client.get_asset_balance(asset='USDT')['free'])
         btc = float(client.get_asset_balance(asset='BTC')['free'])
         price = self.get_price()
-        return usd > (btc * price)
+        return usd < (btc * price)
 
     def buy(self, price, percent=0.95):
         """
