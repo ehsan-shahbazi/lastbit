@@ -232,8 +232,9 @@ class Finance(models.Model):
         if quantity > 0.001:
             if not self.have_btc():
                 print('order sent')
-                order = client.create_oco_order(
+                order = client.create_order(
                     symbol=self.symbol,
+                    type='STOP_LOSS_LIMIT',
                     side=SIDE_BUY,
                     quantity=quantity,
                     stopPrice=str(stop),
@@ -257,9 +258,10 @@ class Finance(models.Model):
         if quantity > 0.001:
             if self.have_btc():
                 print('order sent')
-                order = client.create_oco_order(
+                order = client.create_order(
                     symbol=self.symbol,
                     side=SIDE_SELL,
+                    type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     stopPrice=str(stop),
                     price=str(stop))
