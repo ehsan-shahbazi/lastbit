@@ -142,7 +142,7 @@ class Finance(models.Model):
                 order = client.order_market_buy(
                     symbol=self.symbol,
                     quantity=quantity)
-        return
+        return True
 
     def sell(self, percent=0.95):
         """
@@ -161,7 +161,7 @@ class Finance(models.Model):
                 order = client.order_market_sell(
                     symbol=self.symbol,
                     quantity=quantity)
-        return
+        return True
 
     def get_price(self):
         client = Client(self.user.api_key, self.user.secret_key)
@@ -475,6 +475,7 @@ class Trader(models.Model):
                     self.cancel_all()
                     self.stop_sell(prediction[1]['stop_price'])
                 print('BUY')
+                return True
             elif prediction[0] == 'SELL':
                 if self.have_btc():
                     self.sell(close)
@@ -484,6 +485,7 @@ class Trader(models.Model):
                     self.cancel_all()
                     self.stop_buy(prediction[1]['start_price'])
                 print('SELL')
+                return True
             else:
                 self.cancel_all()
                 if self.have_btc():

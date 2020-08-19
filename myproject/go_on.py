@@ -1,7 +1,7 @@
 from binance.client import Client
 import time
 import pandas as pd
-import django.utils.timezone as timezone
+from requests.exceptions import ReadTimeout
 import os
 import django
 import sys
@@ -47,6 +47,7 @@ def re_sample(the_df, method='1H'):
 
 if __name__ == '__main__':
     while True:
+
         user = User.objects.all()[0]
         predictors = Predictor.objects.all()
         # print(predictors)
@@ -57,16 +58,30 @@ if __name__ == '__main__':
         # timestamp = finance.get_time()
         # print(timestamp)
         # print(client.get_server_time())
-        for predictor in predictors:
-            df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
-            print(df.tail()[['Close']])
-            last = df.tail(1)
-            close = float(last['Close'])
-            print('the price is:', close)
-            traders = predictor.trader_set.all()
-            for trader in traders:
-                the_user = trader.user
-                trader.trade(close, df)
-                print('DECISION DONE.')
-        # print(df['Close'])
-        # print(close)
+        try:
+            for predictor in predictors:
+                df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
+                print(df.tail()[['Close']])
+                last = df.tail(1)
+                close = float(last['Close'])
+                print('the price is:', close)
+                traders = predictor.trader_set.all()
+                for trader in traders:
+                    the_user = trader.user
+                    trader.trade(close, df)
+                    print('DECISION DONE.')
+            # print(df['Close'])
+            # print(close)
+        except ReadTimeout:
+            for predictor in predictors:
+                df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
+                print(df.tail()[['Close']])
+                last = df.tail(1)
+                close = float(last['Close'])
+                print('the price is:', close)
+                traders = predictor.trader_set.all()
+                for trader in traders:
+                    the_user = trader.user
+                    while not trader.trade(close, df):
+                        time.sleep(10)
+                        print('DECISION DONE.')
