@@ -2,6 +2,7 @@ from binance.client import Client
 import time
 import pandas as pd
 from requests.exceptions import ReadTimeout
+from urllib3.exceptions import ReadTimeoutError
 import os
 import django
 import sys
@@ -72,7 +73,7 @@ if __name__ == '__main__':
                     print('DECISION DONE.')
             # print(df['Close'])
             # print(close)
-        except ReadTimeout:
+        except (ReadTimeout, ReadTimeoutError):
             for predictor in predictors:
                 df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
                 print(df.tail()[['Close']])
