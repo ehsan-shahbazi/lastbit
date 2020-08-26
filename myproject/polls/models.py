@@ -7,6 +7,7 @@ import numpy as np
 from binance.client import Client
 from talib._ta_lib import *
 from binance.enums import *
+import time
 # Create your models here.
 
 
@@ -275,8 +276,9 @@ class Finance(models.Model):
         orders = client.get_open_orders(symbol=self.symbol)
         for order in orders:
             if order['symbol'] == self.symbol:
+                time.sleep(1)
                 the_answer = client.cancel_order(symbol=self.symbol, orderId=order['orderId'])
-        return
+        return True
 
     def give_ohlcv(self, interval='1m', size=12):
         """
