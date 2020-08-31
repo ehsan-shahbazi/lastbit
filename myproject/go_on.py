@@ -61,7 +61,7 @@ if __name__ == '__main__':
         # print(client.get_server_time())
         try:
             for predictor in predictors:
-                df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
+                df = finance.give_ohlcv(interval=predictor.time_frame)
                 print(df.tail()[['Close']])
                 last = df.tail(1)
                 close = float(last['Close'])
@@ -75,7 +75,7 @@ if __name__ == '__main__':
             # print(close)
         except (ReadTimeout, ReadTimeoutError):
             for predictor in predictors:
-                df = finance.give_ohlcv(interval=predictor.time_frame, size=666)
+                df = finance.give_ohlcv(interval=predictor.time_frame)
                 print(df.tail()[['Close']])
                 last = df.tail(1)
                 close = float(last['Close'])
