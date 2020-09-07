@@ -1,7 +1,8 @@
 from binance.client import Client
 import time
 import pandas as pd
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ReadTimeout, ConnectionError
+from binance.exceptions import BinanceAPIException
 from urllib3.exceptions import ReadTimeoutError
 import os
 import django
@@ -22,7 +23,7 @@ def wait_until(time_stamp, secs=10, time_step=5):
     :return:
     """
     time_stamp = int(time_stamp)
-    print('timestamp:', timestamp)
+    print('timestamp:', time_stamp)
     sleep = int((60 * time_step) - ((time_stamp/(60 * time_step)) -
                                     int(time_stamp/(60 * time_step))) * (60 * time_step)) - secs
     print('sleep for:', sleep)
@@ -42,47 +43,39 @@ def re_sample(the_df, method='1H'):
                                                                     ('High', 'max'),
                                                                     ('Low', 'min'),
                                                                     ('Close', ['mean', 'last'])]))
-
     return df_res
+
+
+def do_the_job(first=True):
+    user = User.objects.all()[0]
+    predictors = Predictor.objects.all()
+    client = Client(user.api_key, user.secret_key)
+    finance = user.finance_set.all()[0]
+    timestamp = finance.get_time()
+    if first:
+        wait_until(timestamp, secs=10)
+    else:
+        time.sleep(5)
+    try:
+        for predictor in predictors:
+            df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
+            print(df.tail()[['Close']])
+            last = df.tail(1)
+            close = float(last['Close'])
+            print('the price is:', close)
+            traders = predictor.trader_set.all()
+            for trader in traders:
+                the_user = trader.user
+                trader.trade(close, df)
+                print('DECISION DONE.')
+        return True
+    except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+        do_the_job(first=False)
+    finally:
+        return True
 
 
 if __name__ == '__main__':
     while True:
-
-        user = User.objects.all()[0]
-        predictors = Predictor.objects.all()
-        # print(predictors)
-        client = Client(user.api_key, user.secret_key)
-        finance = user.finance_set.all()[0]
-        timestamp = finance.get_time()
-        wait_until(timestamp, secs=10)
-        # timestamp = finance.get_time()
-        # print(timestamp)
-        # print(client.get_server_time())
-        try:
-            for predictor in predictors:
-                df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                print(df.tail()[['Close']])
-                last = df.tail(1)
-                close = float(last['Close'])
-                print('the price is:', close)
-                traders = predictor.trader_set.all()
-                for trader in traders:
-                    the_user = trader.user
-                    trader.trade(close, df)
-                    print('DECISION DONE.')
-            # print(df['Close'])
-            # print(close)
-        except (ReadTimeout, ReadTimeoutError):
-            for predictor in predictors:
-                df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                print(df.tail()[['Close']])
-                last = df.tail(1)
-                close = float(last['Close'])
-                print('the price is:', close)
-                traders = predictor.trader_set.all()
-                for trader in traders:
-                    the_user = trader.user
-                    while not trader.trade(close, df):
-                        time.sleep(10)
-                        print('DECISION DONE.')
+        do_the_job(first=True)
+        time.sleep(1)
