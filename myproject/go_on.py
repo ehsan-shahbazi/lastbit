@@ -18,7 +18,7 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=10, time_step=5):
+def wait_until(time_stamp, secs=10, time_step=30):
     """
     :param time_stamp: coming from the server
     :param secs: how many seconds should we start before new minute starts
@@ -30,7 +30,9 @@ def wait_until(time_stamp, secs=10, time_step=5):
     sleep = int((60 * time_step) - ((time_stamp/(60 * time_step)) -
                                     int(time_stamp/(60 * time_step))) * (60 * time_step)) - secs
     print('sleep for:', sleep)
+    print('=' * 100)
     if sleep > 0:
+
         time.sleep(sleep)
     else:
         time.sleep(sleep + (60 * time_step))
