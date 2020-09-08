@@ -57,7 +57,8 @@ class Histogram:
         start_price = hist[start_index]
         return {'stop_price': stop_price, 'start_price': start_price}
 
-    def decision(self):
+    def decision(self, state, state_var1, state_max_from_last, state_min_from_last, state_last_sell_price,
+                 state_last_buy_price):
         hist = self.prices
         the_strategy = self.strategy
         price = hist[-1]
@@ -79,6 +80,47 @@ class Histogram:
         alpha = pi / tot
         output = []
 
+        # make decision
+        # set the last price set
+        last_price_set = 0
+        if state == 0:
+            if alpha >= 0.98:
+                output.append('BUY')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = price
+            else:
+                output.append('DON\'T MOVE!')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = self.stop_loss(0.98, 0.5)['start_price']
+
+        elif state == 1:
+            if alpha <= 0.5:
+                output.append('SELL')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = price
+            elif self.stop_loss(0.98, 0.5)['stop_price'] >= state_var1 * state_max_from_last:
+                output.append('DON\'T MOVE!')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = self.stop_loss(0.98, 0.5)['stop_price']
+            else:
+                output.append('DON\'T MOVE!')
+                output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
+                last_price_set = state_var1 * state_max_from_last
+
+        elif state == 2:
+            if alpha <= 0.5:
+                output.append('SELL')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = price
+            elif price > state_last_sell_price:
+                output.append('BUY')
+                output.append(self.stop_loss(0.98, 0.5))
+                last_price_set = price
+            else:
+                output.append('DON\'T MOVE!')
+                output.append({'start_price': state_last_sell_price, 'stop_price': 0})
+                last_price_set = state_last_sell_price
+        """        
         for one_strategy in the_strategy:
             if (alpha <= one_strategy['BUY'][1]) & (alpha >= one_strategy['BUY'][0]):
                 output.append('BUY')
@@ -87,7 +129,9 @@ class Histogram:
             else:
                 output.append('DON\'T MOVE!')
         output.append(self.stop_loss(0.98, 0.5))
-        return output
+        """
+
+        return output, last_price_set
 
 
 class User(models.Model):
@@ -331,21 +375,36 @@ class Material(models.Model):
 
 
 class Predictor(models.Model):
+    """
+    each time you change the predictor change time frame and
+    """
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
     model_dir = models.CharField(name='model_dir', default='polls/trained/?.h5', max_length=100)
     i_scale = models.CharField(name='i_scale', default='polls/trained/I_scaler.gz', max_length=100)
     o_scale = models.CharField(name='o_scale', default='polls/trained/O_scaler.gz', max_length=100)
     time_frame = models.CharField(name='time_frame', default='1H', max_length=20)
     last_calc = models.DateTimeField(name='last_calc', default=timezone.now)
-    input_size = models.IntegerField(name='input_size', default=24)
+    input_size = models.IntegerField(name='input_size', default=1)  # if HIST how many time frame is between two
+    # operations of this predictor for example if we sleep 20 minutes and the time frame is 10Min it should be 2
     type = models.CharField(name='type', default='RNN', max_length=20)
     unit = models.CharField(name='unit', default='dollar', max_length=20)
     upper = models.FloatField(name='upper', default=0)
     lower = models.FloatField(name='lower', default=0)
+    state = models.IntegerField(name='state', default=0)
+    state_have_money = models.BooleanField(name='state_have_money', default=True)
+    state_last_price_set = models.FloatField(name='last_price_set', default=0) # the last stop loss sat for knowing the
+    # price which we had in stop loss
+    state_last_buy_price = models.FloatField(name='state_last_buy_price', default=0)
+    state_max_from_last = models.FloatField(name='state_max_from_last', default=0)
+    state_min_from_last = models.FloatField(name='state_min_from_last', default=10000000000)
+    state_var1 = models.FloatField(name='state_var1', default=0)  # percent of selling in state 1 for example 0.99
+    state_var2 = models.FloatField(name='state_var2', default=0)
+    state_var3 = models.FloatField(name='state_var3', default=0)
+    state_last_sell_price = models.FloatField(name='state_last_sell_price', default=0)
 
-    def make_inputs(self, df):
+    def make_inputs(self, df, have_money=True):
         """
-
+        :param have_money:true if we have money
         :param df: It should have just OCHLV and in string
         :return: a list which is input
         """
@@ -363,6 +422,40 @@ class Predictor(models.Model):
                 # print(list(data))
                 inputs.append(list(data))
         elif self.type == 'HIST':
+            new_high = max(list(df['High'].tail(n=self.input_size)))
+            new_low = min(list(df['Low'].tail(n=self.input_size)))
+            tree1 = Histogram(df)
+            prices = tree1.stop_loss(0.98, 0.5)
+            if prices['stop_price'] > new_low:
+                self.state = 0
+
+            if have_money != self.state_have_money:
+                # make the state
+                # make the last_buy_price and last_sell_price
+                # make max_from_last and min_from_last
+                if have_money:
+                    if prices['stop_price'] > new_low:
+                        self.state = 0
+                        self.state_last_sell_price = prices['stop_price']
+                        self.state_min_from_last = self.state_last_price_set
+                        self.state_max_from_last = self.state_last_price_set
+
+                    else:
+                        self.state = 2
+                        self.state_last_sell_price = (self.state_max_from_last * self.state_var1)
+                        self.state_min_from_last = self.state_last_price_set
+                        self.state_max_from_last = self.state_last_price_set
+                else:
+                    self.state = 1
+                    self.state_last_buy_price = self.state_last_price_set
+                    self.state_min_from_last = self.state_last_price_set
+                    self.state_max_from_last = self.state_last_price_set
+
+            self.state_max_from_last = max(self.state_max_from_last, new_high)
+            self.state_min_from_last = min(self.state_min_from_last, new_low)
+            self.state_have_money = have_money
+            self.save()
+            print('the state is:', self.state)
             return df
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
@@ -370,12 +463,12 @@ class Predictor(models.Model):
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
 
-        print('and inputs are:')
-        print(inputs[-20:])
+        # print('and inputs are:')
+        # print(inputs[-20:])
         print('we had: ', len(inputs), ' inputs')
         return inputs
 
-    def predict(self, df='', gamma=0.65):
+    def predict(self, df='', gamma=0.65, have_money=True):
         """
         Inter your code
         :param: df: the df should be appropriated for prediction in size and time framing
@@ -413,9 +506,15 @@ class Predictor(models.Model):
             """
             We need a class called histogram witch has predict and 
             """
-            df = self.make_inputs(df)
+            df = self.make_inputs(df, have_money=have_money)
             tree1 = Histogram(df)
-            return tree1.decision()
+            # do decision based on the states
+            # set state_last_price_set when you made any decision
+            # save the state changes
+            decision, self.state_last_price_set = tree1.decision(self.state, self.state_var1, self.state_max_from_last,
+                                                                 self.state_min_from_last, self.state_last_sell_price,
+                                                                 self.state_last_buy_price)
+            self.save()
 
 
 class Trader(models.Model):
@@ -465,7 +564,8 @@ class Trader(models.Model):
         return str(self.predictor.material.name) + '---' + str(self.predictor.time_frame) + '---' + str(self.user.name)
 
     def trade(self, close, df=''):
-        prediction = self.predictor.predict(df)
+        speaker = self.user.finance_set.all()[0]
+        prediction = self.predictor.predict(df, have_money=not speaker.have_btc())
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
