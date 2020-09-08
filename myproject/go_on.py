@@ -9,6 +9,9 @@ import django
 import sys
 from collections import OrderedDict
 import time as manage_time
+import warnings
+
+warnings.filterwarnings("ignore")
 file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
@@ -59,7 +62,7 @@ def do_the_job(first=True):
     try:
         for predictor in predictors:
             df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-            print(df.tail()[['Close']])
+            # print(df.tail()[['Close']])
             last = df.tail(1)
             close = float(last['Close'])
             print('the price is:', close)
@@ -67,7 +70,6 @@ def do_the_job(first=True):
             for trader in traders:
                 the_user = trader.user
                 trader.trade(close, df)
-                print('DECISION DONE.')
         return True
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         do_the_job(first=False)
