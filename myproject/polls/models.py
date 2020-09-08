@@ -516,6 +516,7 @@ class Predictor(models.Model):
                                                                  self.state_min_from_last, self.state_last_sell_price,
                                                                  self.state_last_buy_price)
             self.save()
+            return decision
 
 
 class Trader(models.Model):
