@@ -404,6 +404,7 @@ class Predictor(models.Model):
 
     def make_inputs(self, df, have_money=True):
         """
+
         :param have_money:true if we have money
         :param df: It should have just OCHLV and in string
         :return: a list which is input
