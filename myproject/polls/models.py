@@ -457,6 +457,7 @@ class Predictor(models.Model):
             self.state_have_money = have_money
             print('the state is:', self.state)
             self.save()
+            print(df.head())
             return df
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
