@@ -408,6 +408,7 @@ class Predictor(models.Model):
         :param df: It should have just OCHLV and in string
         :return: a list which is input
         """
+        print('have_money is:', have_money)
         df = df[["Open", "High", "Low", "Close", "Volume"]]
         df['Close'] = pd.to_numeric(df['Close'])
         df['Open'] = pd.to_numeric(df['Open'])
@@ -425,8 +426,10 @@ class Predictor(models.Model):
             # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
             new_high = max(list(df['High'].tail(n=2)))
             new_low = min(list(df['Low'].tail(n=2)))
+            print('new low and new high are:', new_low, new_high)
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
+            print('prices are: ', prices)
             if prices['stop_price'] > new_low:
                 self.state = 0
 
@@ -443,10 +446,11 @@ class Predictor(models.Model):
 
                     else:
                         self.state = 2
-                        self.state_last_sell_price = (self.state_max_from_last * self.state_var1)
+                        self.state_last_sell_price = (self.state_max_from_last * 0.99)
                         self.state_min_from_last = self.state_last_price_set
                         self.state_max_from_last = self.state_last_price_set
                 else:
+                    print('im here in state 1')
                     self.state = 1
                     self.state_last_buy_price = self.state_last_price_set
                     self.state_min_from_last = self.state_last_price_set
