@@ -452,9 +452,14 @@ class Predictor(models.Model):
                 else:
                     print('im here in state 1')
                     self.state = 1
+                    print('hi1')
                     self.state_last_buy_price = self.state_last_price_set
+                    print('hi2')
                     self.state_min_from_last = self.state_last_price_set
+                    print('hi3')
                     self.state_max_from_last = self.state_last_price_set
+                    print('hi4')
+                    self.save()
                     print('state 1 works finished')
 
             print('setting the maxes')
