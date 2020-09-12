@@ -18,7 +18,7 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=10, time_step=30):
+def wait_until(time_stamp, secs=10, time_step=5):
     """
     :param time_stamp: coming from the server
     :param secs: how many seconds should we start before new minute starts
@@ -74,6 +74,7 @@ def do_the_job(first=True):
                 trader.trade(close, df)
         return True
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+        print('we got an error')
         do_the_job(first=False)
     finally:
         return True
