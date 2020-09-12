@@ -446,18 +446,18 @@ class Predictor(models.Model):
 
                     else:
                         self.state = 2
-                        self.state_last_sell_price = (self.state_max_from_last * 0.99)
-                        self.state_min_from_last = self.state_last_price_set
-                        self.state_max_from_last = self.state_last_price_set
+                        self.state_last_sell_price = float(self.state_max_from_last * 0.99)
+                        self.state_min_from_last = float(self.state_last_price_set)
+                        self.state_max_from_last = float(self.state_last_price_set)
                 else:
                     print('im here in state 1')
                     self.state = 1
                     print('hi1')
-                    self.state_last_buy_price = self.state_last_price_set
+                    self.state_last_buy_price = float(self.state_last_price_set)
                     print('hi2')
-                    self.state_min_from_last = self.state_last_price_set
+                    self.state_min_from_last = float(self.state_last_price_set)
                     print('hi3')
-                    self.state_max_from_last = self.state_last_price_set
+                    self.state_max_from_last = float(self.state_last_price_set)
                     print('hi4')
                     self.save()
                     print('state 1 works finished')
