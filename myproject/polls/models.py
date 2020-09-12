@@ -455,8 +455,8 @@ class Predictor(models.Model):
             self.state_max_from_last = max(self.state_max_from_last, new_high)
             self.state_min_from_last = min(self.state_min_from_last, new_low)
             self.state_have_money = have_money
-            self.save()
             print('the state is:', self.state)
+            self.save()
             return df
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
@@ -507,7 +507,7 @@ class Predictor(models.Model):
             """
             We need a class called histogram witch has predict and 
             """
-            print('HIST mode')
+            print('HIST mode and have money is:', have_money)
             df = self.make_inputs(df, have_money=have_money)
             print(df.tail(1))
             tree1 = Histogram(df)
