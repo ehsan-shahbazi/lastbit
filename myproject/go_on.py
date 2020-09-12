@@ -18,7 +18,7 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=10, time_step=5):
+def wait_until(time_stamp, secs=10, time_step=1):
     """
     :param time_stamp: coming from the server
     :param secs: how many seconds should we start before new minute starts
@@ -69,6 +69,7 @@ def do_the_job(first=True):
             close = float(last['Close'])
             print('the price is:', close)
             traders = predictor.trader_set.all()
+            print('we have ', len(traders), ' traders')
             for trader in traders:
                 the_user = trader.user
                 trader.trade(close, df)

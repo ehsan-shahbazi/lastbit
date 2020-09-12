@@ -507,7 +507,9 @@ class Predictor(models.Model):
             """
             We need a class called histogram witch has predict and 
             """
+            print('HIST mode')
             df = self.make_inputs(df, have_money=have_money)
+            print(df.tail(1))
             tree1 = Histogram(df)
             # do decision based on the states
             # set state_last_price_set when you made any decision
@@ -516,6 +518,7 @@ class Predictor(models.Model):
                                                                  self.state_min_from_last, self.state_last_sell_price,
                                                                  self.state_last_buy_price)
             self.save()
+
             return decision
 
 
@@ -567,6 +570,7 @@ class Trader(models.Model):
 
     def trade(self, close, df=''):
         speaker = self.user.finance_set.all()[0]
+        print(speaker)
         prediction = self.predictor.predict(df, have_money=not speaker.have_btc())
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
