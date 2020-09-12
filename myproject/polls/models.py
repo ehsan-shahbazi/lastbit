@@ -456,8 +456,10 @@ class Predictor(models.Model):
                     self.state_min_from_last = self.state_last_price_set
                     self.state_max_from_last = self.state_last_price_set
 
-            self.state_max_from_last = max(self.state_max_from_last, new_high)
-            self.state_min_from_last = min(self.state_min_from_last, new_low)
+            print('setting the maxes')
+            self.state_max_from_last = float(max(self.state_max_from_last, new_high))
+            self.state_min_from_last = float(min(self.state_min_from_last, new_low))
+            print('setted')
             self.state_have_money = have_money
             print('the state is:', self.state)
             self.save()
