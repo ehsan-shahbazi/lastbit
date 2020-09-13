@@ -430,8 +430,20 @@ class Predictor(models.Model):
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
             # print('prices are: ', prices)
+            changed = False
+            state = self.state
+            state_have_money = self.state_have_money
+            state_last_price_set = self.state_last_price_set
+            state_last_buy_price = self.state_last_buy_price
+            state_max_from_last = self.state_max_from_last
+            state_min_from_last = self.state_min_from_last
+            state_var1 = self.state_var1
+            state_var2 = self.state_var2
+            state_var3 = self.state_var3
+            state_last_sell_price = self.state_last_sell_price
+
             if prices['stop_price'] > new_low:
-                self.state = 0
+                state = 0
 
             if have_money != self.state_have_money:
                 # make the state
@@ -439,41 +451,35 @@ class Predictor(models.Model):
                 # make max_from_last and min_from_last
                 if have_money:
                     if prices['stop_price'] > new_low:
-                        self.state = 0
-                        self.state_last_sell_price = prices['stop_price']
-                        self.state_min_from_last = self.state_last_price_set
-                        self.state_max_from_last = self.state_last_price_set
+                        state = 0
+                        state_last_sell_price = prices['stop_price']
+                        state_min_from_last = self.state_last_price_set
+                        state_max_from_last = self.state_last_price_set
 
                     else:
-                        self.state = 2
-                        self.state_last_sell_price = float(self.state_max_from_last * 0.99)
-                        self.state_min_from_last = float(self.state_last_price_set)
-                        self.state_max_from_last = float(self.state_last_price_set)
+                        state = 2
+                        state_last_sell_price = float(self.state_max_from_last * 0.99)
+                        state_min_from_last = float(self.state_last_price_set)
+                        state_max_from_last = float(self.state_last_price_set)
                 else:
                     print('im here in state 1')
-                    self.state = 1
-                    self.save()
+                    state = 1
                     print('saved')
                     last_buy = float(self.state_last_price_set)
-                    self.state_last_buy_price = last_buy
-                    self.save()
+                    state_last_buy_price = last_buy
                     print('hi2')
-                    self.state_min_from_last = float(self.state_last_price_set)
+                    state_min_from_last = float(self.state_last_price_set)
                     print('hi3')
-                    self.state_max_from_last = float(self.state_last_price_set)
+                    state_max_from_last = float(self.state_last_price_set)
                     print('hi4')
-                    self.save()
                     print('state 1 works finished')
 
-            print('setting the maxes')
-            self.state_max_from_last = float(max(self.state_max_from_last, new_high))
-            self.state_min_from_last = float(min(self.state_min_from_last, new_low))
-            print('setted')
-            self.state_have_money = have_money
-            print('the state is:', self.state)
-            self.save()
-            print(df.head())
-            return df
+            state_max_from_last = float(max(state_max_from_last, new_high))
+            state_min_from_last = float(min(state_min_from_last, new_low))
+            state_have_money = have_money
+            print('the last state is:', self.state)
+            return (df, (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
+                         state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price))
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
             print(df.tail())
@@ -495,6 +501,7 @@ class Predictor(models.Model):
 
             tree1 = joblib.load(self.model_dir)
             the_input = self.make_inputs(df)
+
             if self.type == 'MAD':
                 print('MAD mode')
                 predictions = tree1.predict(the_input)
@@ -523,19 +530,23 @@ class Predictor(models.Model):
             """
             We need a class called histogram witch has predict and 
             """
-            print('HIST mode and have money is:', have_money)
-            df = self.make_inputs(df, have_money=have_money)
+
+            out = self.make_inputs(df, have_money=have_money)
+            df = out[0]
             print(df.tail(1))
             tree1 = Histogram(df)
             # do decision based on the states
             # set state_last_price_set when you made any decision
             # save the state changes
-            decision, self.state_last_price_set = tree1.decision(self.state, self.state_var1, self.state_max_from_last,
-                                                                 self.state_min_from_last, self.state_last_sell_price,
-                                                                 self.state_last_buy_price)
-            self.save()
-
-            return decision
+            """
+            (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
+             state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
+            """
+            decision, out[1][2] = tree1.decision(out[1][0], out[1][6], out[1][4],
+                                                 out[1][5], out[1][9],
+                                                 out[1][3])
+            print('after all we have state values as:', out[1])
+            return decision, out[1]
 
 
 class Trader(models.Model):
@@ -587,7 +598,7 @@ class Trader(models.Model):
     def trade(self, close, df=''):
         speaker = self.user.finance_set.all()[0]
         print(speaker)
-        prediction = self.predictor.predict(df, have_money=not speaker.have_btc())
+        prediction, states = self.predictor.predict(df, have_money=not speaker.have_btc())
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
@@ -599,7 +610,7 @@ class Trader(models.Model):
                     self.cancel_all()
                     self.stop_sell(prediction[1]['stop_price'])
                 print('BUY')
-                return True
+                return True, states
             elif prediction[0] == 'SELL':
                 if self.have_btc():
                     self.sell(close)
@@ -609,14 +620,14 @@ class Trader(models.Model):
                     self.cancel_all()
                     self.stop_buy(prediction[1]['start_price'])
                 print('SELL')
-                return True
+                return True, states
             else:
                 self.cancel_all()
                 if self.have_btc():
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
                     self.stop_buy(prediction[1]['start_price'])
-            return True
+            return True, states
 
         if prediction > self.predictor.upper:
             self.buy(close)

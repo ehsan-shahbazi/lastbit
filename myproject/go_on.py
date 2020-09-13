@@ -72,7 +72,26 @@ def do_the_job(first=True):
             print('we have ', len(traders), ' traders')
             for trader in traders:
                 the_user = trader.user
-                trader.trade(close, df)
+                output = trader.trade(close, df)
+                if output[0]:
+                    new_predictor_states = output[1]
+                    """
+                    (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
+                    state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
+                    """
+                    print('saving the state changes')
+                    predictor.state = output[1][0]
+                    predictor.state_have_money = output[1][1]
+                    predictor.state_last_price_set = output[1][2]
+                    predictor.state_last_buy_price = output[1][3]
+                    predictor.state_max_from_last = output[1][4]
+                    predictor.state_min_from_last = output[1][5]
+                    predictor.state_var1 = output[1][6]
+                    predictor.state_var2 = output[1][7]
+                    predictor.state_var3 = output[1][8]
+                    predictor.state_last_sell_price = output[1][9]
+                    predictor.save()
+                    print('saved!')
         return True
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
