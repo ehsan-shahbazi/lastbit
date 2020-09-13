@@ -452,7 +452,8 @@ class Predictor(models.Model):
                 else:
                     print('im here in state 1')
                     self.state = 1
-                    self.state_last_buy_price = float(self.state_last_price_set)
+                    last_buy = float(self.state_last_price_set)
+                    self.state_last_buy_price = last_buy
                     print('hi2')
                     self.state_min_from_last = float(self.state_last_price_set)
                     print('hi3')
