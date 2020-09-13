@@ -426,11 +426,10 @@ class Predictor(models.Model):
             # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
             new_high = max(list(df['High'].tail(n=2)))
             new_low = min(list(df['Low'].tail(n=2)))
-            # print('new low and new high are:', new_low, new_high)
+            print('new low and new high are:', new_low, new_high)
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
             # print('prices are: ', prices)
-            changed = False
             state = self.state
             state_have_money = self.state_have_money
             state_last_price_set = self.state_last_price_set
@@ -445,7 +444,8 @@ class Predictor(models.Model):
             if prices['stop_price'] > new_low:
                 state = 0
 
-            if have_money != self.state_have_money:
+            if have_money != state_have_money:
+                print('im here')
                 # make the state
                 # make the last_buy_price and last_sell_price
                 # make max_from_last and min_from_last
@@ -458,19 +458,19 @@ class Predictor(models.Model):
 
                     else:
                         state = 2
-                        state_last_sell_price = float(self.state_max_from_last * 0.99)
-                        state_min_from_last = float(self.state_last_price_set)
-                        state_max_from_last = float(self.state_last_price_set)
+                        state_last_sell_price = float(state_max_from_last * 0.99)
+                        state_min_from_last = float(state_last_price_set)
+                        state_max_from_last = float(state_last_price_set)
                 else:
                     print('im here in state 1')
                     state = 1
                     print('saved')
-                    last_buy = float(self.state_last_price_set)
+                    last_buy = float(state_last_price_set)
                     state_last_buy_price = last_buy
                     print('hi2')
-                    state_min_from_last = float(self.state_last_price_set)
+                    state_min_from_last = float(state_last_price_set)
                     print('hi3')
-                    state_max_from_last = float(self.state_last_price_set)
+                    state_max_from_last = float(state_last_price_set)
                     print('hi4')
                     print('state 1 works finished')
 
