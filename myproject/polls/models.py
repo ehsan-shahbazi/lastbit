@@ -430,6 +430,7 @@ class Predictor(models.Model):
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
             # print('prices are: ', prices)
+
             state = self.state
             state_have_money = self.state_have_money
             state_last_price_set = self.state_last_price_set
@@ -440,7 +441,8 @@ class Predictor(models.Model):
             state_var2 = self.state_var2
             state_var3 = self.state_var3
             state_last_sell_price = self.state_last_sell_price
-
+            print('parameters seted')
+            print(have_money, state_have_money)
             if prices['stop_price'] > new_low:
                 state = 0
 
