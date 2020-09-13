@@ -432,14 +432,23 @@ class Predictor(models.Model):
             print('prices are: ', prices)
             print('setting the parameters')
             state = self.state
+            print('state')
             state_have_money = self.state_have_money
+            print('have money')
             state_last_price_set = self.state_last_price_set
+            print('last set')
             state_last_buy_price = self.state_last_buy_price
+            print('last buy')
             state_max_from_last = self.state_max_from_last
+            print('max')
             state_min_from_last = self.state_min_from_last
+            print('min')
             state_var1 = self.state_var1
+            print('var1')
             state_var2 = self.state_var2
+            print('var2')
             state_var3 = self.state_var3
+            print('var3')
             state_last_sell_price = self.state_last_sell_price
             print('parameters seted')
             print(have_money, state_have_money)
