@@ -429,8 +429,8 @@ class Predictor(models.Model):
             print('new low and new high are:', new_low, new_high)
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
-            # print('prices are: ', prices)
-
+            print('prices are: ', prices)
+            print('setting the parameters')
             state = self.state
             state_have_money = self.state_have_money
             state_last_price_set = self.state_last_price_set
