@@ -391,7 +391,8 @@ class Predictor(models.Model):
     lower = models.FloatField(name='lower', default=0)
     state = models.IntegerField(name='state', default=0)
     state_have_money = models.BooleanField(name='state_have_money', default=True)
-    state_last_price_set = models.FloatField(name='last_price_set', default=0) # the last stop loss sat for knowing the
+    state_last_price_set = models.FloatField(name='last_price_set', default=0)  # the last stop loss sat for knowing the
+    state_last_sell_price = models.FloatField(name='state_last_sell_price', default=0)
     # price which we had in stop loss
     state_last_buy_price = models.FloatField(name='state_last_buy_price', default=0)
     state_max_from_last = models.FloatField(name='state_max_from_last', default=0)
@@ -399,7 +400,6 @@ class Predictor(models.Model):
     state_var1 = models.FloatField(name='state_var1', default=0)  # percent of selling in state 1 for example 0.99
     state_var2 = models.FloatField(name='state_var2', default=0)
     state_var3 = models.FloatField(name='state_var3', default=0)
-    state_last_sell_price = models.FloatField(name='state_last_sell_price', default=0)
 
     def make_inputs(self, df, have_money=True):
         """
