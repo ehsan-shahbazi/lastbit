@@ -320,6 +320,7 @@ class Finance(models.Model):
             if order['symbol'] == self.symbol:
                 time.sleep(1)
                 the_answer = client.cancel_order(symbol=self.symbol, orderId=order['orderId'])
+        print('hi')
         return True
 
     def give_ohlcv(self, interval='1m', size=12):
@@ -560,7 +561,7 @@ class Trader(models.Model):
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
-                if have_btc():
+                if have_btc:
                     self.cancel_all()
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
@@ -570,7 +571,7 @@ class Trader(models.Model):
                 print('BUY')
                 return True, states
             elif prediction[0] == 'SELL':
-                if have_btc():
+                if have_btc:
                     self.sell(close)
                     self.cancel_all()
                     self.stop_buy(prediction[1]['start_price'])
@@ -581,7 +582,7 @@ class Trader(models.Model):
                 return True, states
             else:
                 self.cancel_all()
-                if have_btc():
+                if have_btc:
                     print(prediction[1]['stop_price'])
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
