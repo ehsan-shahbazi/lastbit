@@ -62,6 +62,7 @@ class Histogram:
         hist = self.prices
         the_strategy = self.strategy
         price = hist[-1]
+        print('im in histogram and price is:', price)
         """
         :param hist: [price1, price2, price3, ...]
         :param price: current price
@@ -94,6 +95,7 @@ class Histogram:
                 last_price_set = self.stop_loss(0.98, 0.5)['start_price']
 
         elif state == 1:
+
             if alpha <= 0.5:
                 output.append('SELL')
                 output.append(self.stop_loss(0.98, 0.5))
@@ -429,27 +431,16 @@ class Predictor(models.Model):
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
             print('prices are: ', prices)
-            print('setting the parameters')
             state = self.state
-            print('state')
             state_have_money = self.state_have_money
-            print('have money')
             state_last_price_set = self.state_last_price_set
-            print('last set')
             state_last_buy_price = self.state_last_buy_price
-            print('last buy')
             state_max_from_last = self.state_max_from_last
-            print('max')
             state_min_from_last = self.state_min_from_last
-            print('min')
-            state_var1 = self.state_var1
-            print('var1')
-            state_var2 = self.state_var2
-            print('var2')
-            state_var3 = self.state_var3
-            print('var3')
             state_last_sell_price = self.state_last_sell_price
-            print('parameters seted')
+            state_var1 = self.state_var1
+            state_var2 = self.state_var2
+            state_var3 = self.state_var3
             print(have_money, state_have_money)
             if prices['stop_price'] > new_low:
                 state = 0
@@ -468,21 +459,16 @@ class Predictor(models.Model):
 
                     else:
                         state = 2
-                        state_last_sell_price = float(state_max_from_last * 0.99)
-                        state_min_from_last = float(state_last_price_set)
-                        state_max_from_last = float(state_last_price_set)
+                        state_last_sell_price = state_max_from_last * 0.99
+                        state_min_from_last = state_last_price_set
+                        state_max_from_last = state_last_price_set
                 else:
                     print('im here in state 1')
                     state = 1
-                    print('saved')
-                    last_buy = float(state_last_price_set)
+                    last_buy = state_last_price_set
                     state_last_buy_price = last_buy
-                    print('hi2')
-                    state_min_from_last = float(state_last_price_set)
-                    print('hi3')
-                    state_max_from_last = float(state_last_price_set)
-                    print('hi4')
-                    print('state 1 works finished')
+                    state_min_from_last = state_last_price_set
+                    state_max_from_last = state_last_price_set
 
             state_max_from_last = float(max(state_max_from_last, new_high))
             state_min_from_last = float(min(state_min_from_last, new_low))
@@ -538,13 +524,14 @@ class Predictor(models.Model):
 
         else:
             """
-            We need a class called histogram witch has predict and 
+            We need a class called histogram which has predict and 
             """
 
             out = self.make_inputs(df, have_money=have_money)
             df = out[0]
             print(df.tail(1))
             tree1 = Histogram(df)
+
             # do decision based on the states
             # set state_last_price_set when you made any decision
             # save the state changes
@@ -552,6 +539,7 @@ class Predictor(models.Model):
             (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
              state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
             """
+            print(out[1])
             decision, out[1][2] = tree1.decision(out[1][0], out[1][6], out[1][4],
                                                  out[1][5], out[1][9],
                                                  out[1][3])
