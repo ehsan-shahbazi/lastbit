@@ -94,6 +94,8 @@ class Histogram:
                 output.append('DON\'T MOVE!')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = self.stop_loss(0.98, 0.5)['start_price']
+            return output, last_price_set
+
         elif state == 1:
             if alpha <= 0.5:
                 print('we must sell fast')
@@ -111,6 +113,7 @@ class Histogram:
                 output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
             print('the output is:', output)
+            return output, last_price_set
         elif state == 2:
             if alpha <= 0.5:
                 output.append('SELL')
@@ -124,6 +127,8 @@ class Histogram:
                 output.append('DON\'T MOVE!')
                 output.append({'start_price': state_last_sell_price, 'stop_price': 0})
                 last_price_set = state_last_sell_price
+            return output, last_price_set
+
         return output, last_price_set
 
 
