@@ -500,7 +500,7 @@ class Predictor(models.Model):
         temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
         print('temp is:', temp)
         out[1][2] = temp[1]
-
+        print('hi')
         return temp[0], out[1]
 
 
