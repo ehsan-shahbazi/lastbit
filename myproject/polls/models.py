@@ -496,11 +496,10 @@ class Predictor(models.Model):
         (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
         """
-        print(tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3]))
-        decision, temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
-        out[1][2] = temp
-        print(decision, out[1])
-        return decision, out[1]
+        temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
+        out[1][2] = temp[1]
+        print('temp is:', temp)
+        return temp[0], out[1]
 
 
 class Trader(models.Model):
