@@ -499,6 +499,7 @@ class Predictor(models.Model):
         print(tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3]))
         temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
         print('temp is:', temp)
+        print(out[1][2], temp[1])
         out[1][2] = temp[1]
         print('hi')
         return temp[0], out[1]
