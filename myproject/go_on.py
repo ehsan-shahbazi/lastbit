@@ -18,7 +18,7 @@ django.setup()
 from polls.models import User, Predictor
 
 
-def wait_until(time_stamp, secs=10, time_step=1):
+def wait_until(time_stamp, secs=10, time_step=30):
     """
     :param time_stamp: coming from the server
     :param secs: how many seconds should we start before new minute starts
