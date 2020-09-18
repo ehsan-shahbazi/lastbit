@@ -496,12 +496,12 @@ class Predictor(models.Model):
         (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
         """
-        print(tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3]))
+        # print(tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3]))
         temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
-        print('temp is:', temp)
+        # print('temp is:', temp)
         print(out[1][2], temp[1])
         new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
-        print('hi')
+        # print('hi')
         return temp[0], new_temp
 
 
@@ -553,12 +553,13 @@ class Trader(models.Model):
 
     def trade(self, close, df=''):
         speaker = self.user.finance_set.all()[0]
-        print(speaker)
-        prediction, states = self.predictor.predict(df, have_money=not speaker.have_btc())
+        # print(speaker)
+        have_btc = speaker.have_btc()
+        prediction, states = self.predictor.predict(df, have_money=not have_btc)
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
-                if self.have_btc():
+                if have_btc():
                     self.cancel_all()
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
@@ -568,7 +569,7 @@ class Trader(models.Model):
                 print('BUY')
                 return True, states
             elif prediction[0] == 'SELL':
-                if self.have_btc():
+                if have_btc():
                     self.sell(close)
                     self.cancel_all()
                     self.stop_buy(prediction[1]['start_price'])
@@ -579,18 +580,11 @@ class Trader(models.Model):
                 return True, states
             else:
                 self.cancel_all()
-                if self.have_btc():
+                if have_btc():
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
                     self.stop_buy(prediction[1]['start_price'])
             return True, states
-
-        if prediction > self.predictor.upper:
-            self.buy(close)
-            print('BUY')
-        if prediction < self.predictor.lower:
-            self.sell(close)
-            print('SELL')
 
     def buy(self, close):
         speaker = self.user.finance_set.all()[0]
