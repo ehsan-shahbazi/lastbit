@@ -89,13 +89,12 @@ class Histogram:
                 output.append('BUY')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = price
+
             else:
                 output.append('DON\'T MOVE!')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = self.stop_loss(0.98, 0.5)['start_price']
-
         elif state == 1:
-
             if alpha <= 0.5:
                 print('we must sell fast')
                 output.append('SELL')
@@ -125,17 +124,6 @@ class Histogram:
                 output.append('DON\'T MOVE!')
                 output.append({'start_price': state_last_sell_price, 'stop_price': 0})
                 last_price_set = state_last_sell_price
-        """        
-        for one_strategy in the_strategy:
-            if (alpha <= one_strategy['BUY'][1]) & (alpha >= one_strategy['BUY'][0]):
-                output.append('BUY')
-            elif (alpha <= one_strategy['SELL'][1]) & (alpha >= one_strategy['SELL'][0]):
-                output.append('SELL')
-            else:
-                output.append('DON\'T MOVE!')
-        output.append(self.stop_loss(0.98, 0.5))
-        """
-
         return output, last_price_set
 
 
@@ -532,7 +520,7 @@ class Predictor(models.Model):
 
             out = self.make_inputs(df, have_money=have_money)
             df = out[0]
-            print(df.tail(1))
+            # print(df.tail(1))
             tree1 = Histogram(df)
 
             # do decision based on the states
@@ -542,11 +530,9 @@ class Predictor(models.Model):
             (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
              state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
             """
-            print(out[1])
-            decision, out[1][2] = tree1.decision(out[1][0], out[1][6], out[1][4],
-                                                 out[1][5], out[1][9],
-                                                 out[1][3])
-            print('after all we have state values as:', out[1])
+
+            decision, out[1][2] = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
+            print(decision, out[1])
             return decision, out[1]
 
 
