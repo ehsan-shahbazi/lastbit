@@ -80,7 +80,7 @@ class Histogram:
 
         alpha = pi / tot
         output = []
-
+        print('current alpha is:', alpha)
         # make decision
         # set the last price set
         last_price_set = 0
@@ -97,18 +97,21 @@ class Histogram:
         elif state == 1:
 
             if alpha <= 0.5:
+                print('we must sell fast')
                 output.append('SELL')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = price
-            elif self.stop_loss(0.98, 0.5)['stop_price'] >= state_var1 * state_max_from_last:
+            elif self.stop_loss(0.98, 0.5)['stop_price'] >= (state_var1 * state_max_from_last):
+                print('we should sell in 0.5')
                 output.append('DON\'T MOVE!')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = self.stop_loss(0.98, 0.5)['stop_price']
             else:
+                print('we should sell in:', state_var1 * state_max_from_last)
                 output.append('DON\'T MOVE!')
                 output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
-
+            print('the output is:', output)
         elif state == 2:
             if alpha <= 0.5:
                 output.append('SELL')
