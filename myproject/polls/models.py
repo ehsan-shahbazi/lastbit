@@ -315,6 +315,7 @@ class Finance(models.Model):
         print('cancel all')
         client = Client(self.user.api_key, self.user.secret_key)
         orders = client.get_open_orders(symbol=self.symbol)
+        print('order list is:', orders)
         for order in orders:
             if order['symbol'] == self.symbol:
                 time.sleep(1)
