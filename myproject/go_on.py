@@ -67,9 +67,9 @@ def do_the_job(first=True):
             # print(df.tail()[['Close']])
             last = df.tail(1)
             close = float(last['Close'])
-            print('the price is:', close)
+            # print('the price is:', close)
             traders = predictor.trader_set.all()
-            print('we have ', len(traders), ' traders')
+            # print('we have ', len(traders), ' traders')
             for trader in traders:
                 the_user = trader.user
                 output = trader.trade(close, df)
@@ -79,7 +79,7 @@ def do_the_job(first=True):
                     (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
                     state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
                     """
-                    print('saving the state changes')
+                    # print('saving the state changes')
                     predictor.state = output[1][0]
                     predictor.state_have_money = output[1][1]
                     predictor.state_last_price_set = output[1][2]

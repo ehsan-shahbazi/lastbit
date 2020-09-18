@@ -581,6 +581,7 @@ class Trader(models.Model):
             else:
                 self.cancel_all()
                 if have_btc():
+                    print(prediction[1]['stop_price'])
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
                     self.stop_buy(prediction[1]['start_price'])
