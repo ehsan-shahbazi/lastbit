@@ -30,7 +30,7 @@ def wait_until(time_stamp, secs=10, time_step=1):
     sleep = int((60 * time_step) - ((time_stamp/(60 * time_step)) -
                                     int(time_stamp/(60 * time_step))) * (60 * time_step)) - secs
     print('sleep for:', sleep)
-    print('=' * 100)
+    print('=' * 70)
     if sleep > 0:
 
         time.sleep(sleep)

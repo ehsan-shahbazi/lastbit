@@ -281,6 +281,7 @@ class Finance(models.Model):
                     quantity=quantity,
                     stopPrice=str(stop),
                     price=str(stop))
+                print(order)
             return True
         return False
 
