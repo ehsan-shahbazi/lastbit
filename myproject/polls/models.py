@@ -309,6 +309,7 @@ class Finance(models.Model):
                     timeInForce='GTC',
                     stopPrice=str(stop),
                     price=str(stop))
+                print(order)
             return True
         return False
 
