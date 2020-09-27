@@ -1,6 +1,0 @@
-venv
-.idea/
-*.sqlite3
-myproject/myproject/__pycache__
-myproject/polls/__pycache__
-myproject/*/migrations

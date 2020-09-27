@@ -17,7 +17,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
 from polls.models import User, Predictor
 is_simulation = True
-
+testing = True
 
 def wait_until(time_stamp, secs=10, time_step=30):
     """
@@ -26,6 +26,8 @@ def wait_until(time_stamp, secs=10, time_step=30):
     :param time_step: how many minutes should we wait each time?
     :return:
     """
+    if is_simulation:
+        return True
     time_stamp = int(time_stamp)
     print('timestamp:', time_stamp)
     sleep = int((60 * time_step) - ((time_stamp/(60 * time_step)) -
@@ -40,17 +42,19 @@ def wait_until(time_stamp, secs=10, time_step=30):
     return True
 
 
-def re_sample(the_df, method='1H'):
-    period = len(the_df)
-    ids = pd.period_range('2014-12-01 00:00:00', freq='T', periods=period)
-    # print(the_df['Close'].head())
-    the_df[['Open', 'High', 'Close', 'Low']] = the_df[['Open', 'High', 'Close', 'Low']].astype(float)
-    df_res = the_df.set_index(ids).resample(method).agg(OrderedDict([('Open', 'first'),
-                                                                    ('High', 'max'),
-                                                                    ('Low', 'min'),
-                                                                    ('Close', ['mean', 'last'])]))
-    return df_res
+class Simulator:
+    def __init__(self):
+        self.step_size = 30
+        self.current_step = 5000
+        self.bit_df = pd.read_csv('./data/bitstampUSD_1-min_data_2012-01-01_to_2020-04-22.csv').dropna()
 
+    def give_df(self):
+        self.current_step += self.step_size
+        return self.bit_df.iloc[self.current_step - self.step_size:self.current_step]
+
+    def do_simulation_job(self):
+        user = User.objects.get(name='simulator')
+        print(user)
 
 def do_the_job(first=True):
     user = User.objects.all()[0]
@@ -102,6 +106,12 @@ def do_the_job(first=True):
 
 
 if __name__ == '__main__':
-    while True:
-        do_the_job(first=True)
-        time.sleep(1)
+    if testing:
+        simulator = Simulator()
+        print(simulator.give_df())
+        print(simulator.do_simulation_job())
+
+    else:
+        while True:
+            do_the_job(first=True)
+            time.sleep(1)
