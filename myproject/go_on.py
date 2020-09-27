@@ -16,6 +16,7 @@ file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
 from polls.models import User, Predictor
+is_simulation = True
 
 
 def wait_until(time_stamp, secs=10, time_step=30):
