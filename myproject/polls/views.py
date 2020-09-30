@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import numpy as np
-from .models import Activity
+from .models import Activity, User
 
 # Create your views here.
 
