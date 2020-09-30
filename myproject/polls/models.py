@@ -564,27 +564,27 @@ class Trader(models.Model):
             if prediction[0] == 'BUY':
                 if have_btc:
                     self.cancel_all()
-                    self.stop_sell(prediction[1]['stop_price'])
+                    # self.stop_sell(prediction[1]['stop_price'])
                 else:
                     self.buy(close)
                     self.cancel_all()
-                    self.stop_sell(prediction[1]['stop_price'])
+                    # self.stop_sell(prediction[1]['stop_price'])
                 print('BUY')
                 return True, states
             elif prediction[0] == 'SELL':
                 if have_btc:
                     self.sell(close)
-                    self.cancel_all()
-                    self.stop_buy(prediction[1]['start_price'])
+                    # self.cancel_all()
+                    # self.stop_buy(prediction[1]['start_price'])
                 else:
                     self.cancel_all()
-                    self.stop_buy(prediction[1]['start_price'])
+                    # self.stop_buy(prediction[1]['start_price'])
                 print('SELL')
                 return True, states
             else:
+                print(prediction)
                 self.cancel_all()
                 if have_btc:
-                    print(prediction[1]['stop_price'])
                     self.stop_sell(prediction[1]['stop_price'])
                 else:
                     self.stop_buy(prediction[1]['start_price'])
