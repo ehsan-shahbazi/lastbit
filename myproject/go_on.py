@@ -72,7 +72,7 @@ def re_sample(the_df, method='1H'):
 class Simulator:
     def __init__(self):
         self.step_size = 30             # Step time
-        self.current_step = 700000      # The first price in the historical data
+        self.current_step = 1000000      # The first price in the historical data
         self.df_size = 7000             # It must be less than current step
         self.resample_method = '15Min'  # It can be '1H' , 'nMin' , ...
         self.bit_df = pd.read_csv('./data/bitstampUSD_1-min_data_2012-01-01_to_2020-04-22.csv').dropna()

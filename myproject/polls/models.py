@@ -62,7 +62,7 @@ class Histogram:
         hist = self.prices
         the_strategy = self.strategy
         price = hist[-1]
-        # print('im in histogram and price is:', price)
+
         """
         :param hist: [price1, price2, price3, ...]
         :param price: current price
@@ -80,9 +80,6 @@ class Histogram:
 
         alpha = pi / tot
         output = []
-        # print('current alpha is:', alpha)
-        # make decision
-        # set the last price set
         last_price_set = 0
         if state == 0:
             if alpha >= 0.98:
@@ -110,7 +107,8 @@ class Histogram:
             else:
                 # print('we should sell in:', state_var1 * state_max_from_last)
                 output.append('DON\'T MOVE!')
-                output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
+                output.append({'start_price': self.stop_loss(0.98, 0.5)['start_price'],
+                               'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
             # print('the output is:', output)
             return output, last_price_set
@@ -125,7 +123,8 @@ class Histogram:
                 last_price_set = price
             else:
                 output.append('DON\'T MOVE!')
-                output.append({'start_price': state_last_sell_price, 'stop_price': 0})
+                output.append({'start_price': state_last_sell_price,
+                               'stop_price': self.stop_loss(0.98, 0.5)['stop_price']})
                 last_price_set = state_last_sell_price
             return output, last_price_set
 
@@ -292,7 +291,6 @@ class Finance(models.Model):
         :param percent: how much of the asset? 100 means all of it
         :return:
         """
-        #print('sell stop')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
@@ -454,15 +452,20 @@ class Predictor(models.Model):
                     else:
                         state = 2
                         state_last_sell_price = state_max_from_last * 0.99
-                        state_min_from_last = state_last_price_set
-                        state_max_from_last = state_last_price_set
+                        # state_min_from_last = state_last_price_set
+                        # state_max_from_last = state_last_price_set
                 else:
                     # print('im here in state 1')
-                    state = 1
-                    last_buy = state_last_price_set
-                    state_last_buy_price = last_buy
-                    state_min_from_last = state_last_price_set
-                    state_max_from_last = state_last_price_set
+                    if self.state == 0:
+                        state = 1
+                        last_buy = state_last_price_set
+                        state_last_buy_price = last_buy
+                        state_min_from_last = state_last_price_set
+                        state_max_from_last = state_last_price_set
+                    else:
+                        state = 1
+                        last_buy = state_last_price_set
+                        state_last_buy_price = last_buy
 
             state_max_from_last = float(max(state_max_from_last, new_high))
             state_min_from_last = float(min(state_min_from_last, new_low))
@@ -567,13 +570,14 @@ class Trader(models.Model):
                     if have_btc == 1:
                         # self.cancel_all()
                         # self.stop_sell(prediction[1]['stop_price'])
-                        outputs.append(['stop_sell', prediction[1]['stop_price']])
+                        # outputs.append(['stop_sell', prediction[1]['stop_price']])
+                        print('we want to buy but we have btc al ready')
                     else:
                         # self.buy(close)
                         outputs.append(['buy', close])
                         # self.cancel_all()
                         # self.stop_sell(prediction[1]['stop_price'])
-                        outputs.append(['stop_sell', prediction[1]['stop_price']])
+                        # outputs.append(['stop_sell', prediction[1]['stop_price']])
                     # print('BUY')
                     return True, states, outputs
                 elif prediction[0] == 'SELL':
