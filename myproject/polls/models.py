@@ -157,15 +157,16 @@ class Finance(models.Model):
         timestamp = client.get_server_time()
         return int(timestamp['serverTime']) / 1000
 
-    def have_btc(self):
+    def have_btc(self, symbol, close):
         """
+        :param close: the last price of the good
+        :param symbol: it should be '...USDT'
         :return: if we have btc then returns true else false
         """
         client = Client(self.user.api_key, self.user.secret_key)
         usd = float(client.get_asset_balance(asset='USDT')['free'])
-        btc = float(client.get_asset_balance(asset='BTC')['free'])
-        price = self.get_price()
-        return usd < (btc * price)
+        btc = float(client.get_asset_balance(asset=symbol.replace('USDT', ''))['free'])
+        return usd < (btc * close)
 
     def buy(self, price, percent=0.95):
         """
@@ -554,11 +555,26 @@ class Trader(models.Model):
     def __str__(self):
         return str(self.predictor.material.name) + '---' + str(self.predictor.time_frame) + '---' + str(self.user.name)
 
-    def trade(self, close, df=''):
-        speaker = self.user.finance_set.all()[0]
-        # print(speaker)
-        have_btc = speaker.have_btc()
+    def trade(self, close, df='', finance=None, investigate_mode=False):
+        """
+        :param close:
+        :param df:
+        :param finance: if none it will use the first finance in finance set of the user
+        :param investigate_mode: if true we don't apply real actions
+        :return: investigate mode: return prediction, states
+        else: return True, states
+        """
+
+        if not finance:
+            speaker = self.user.finance_set.all()[0]
+        else:
+            speaker = finance
+
+        have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
+        if investigate_mode:
+            return prediction, states
+
         print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':

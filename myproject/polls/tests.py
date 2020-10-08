@@ -1,8 +1,13 @@
-from django.test import TestCase
+a = ['hihowareyou', 1, {'hi': 2}]
+print(a[2]['hi'])
 import pandas as pd
 
-a = [1, 2, 3, 4, 5, 3, 2]
-b = pd.DataFrame({'a': a})
-print(max(list(b['a'].tail(n=3))))
+a1 = pd.DataFrame([[1, 2, 3, 1, 5, 6, 7], [10, 2, 3, 4, 5, 6, 7], [0, 3, 4, 3, 6, 7, 8]])
+a2 = pd.DataFrame([[1, 5, 3, 1, 5, 13, 7], [2, 1, 3, 4, 5, 6, 13], [3, 3, 41, 3, 6, 7, 8]])
+a3 = pd.DataFrame([[1, 2, 3, 1, 5, 6, 7], [2, 2, 3, 4, 5, 6, 7], [3, 3, 6, 3, 6, 7, 8]])
+a4 = pd.DataFrame([[1, 2, 5, 1, 5, 6, 3], [2, 2, 7, 4, 5, 6, 7], [0, 3, 4, 3, 6, 7, 8]])
+a5 = pd.DataFrame([[1, 2, 3, 16, 5, 6, 7], [2, 2, 4, 4, 5, 6, 7], [3, 3, 6, 3, 6, 7, 8]])
 
-# Create your tests here.
+a = [[a1, 's'], [a2, 'qw'], [a3, 'd'], [a4, 's'], [a5, 'd']]
+a.sort(key=lambda x: x[0][0].std())
+print(a)
