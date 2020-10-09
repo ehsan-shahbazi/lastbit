@@ -133,7 +133,7 @@ def do_the_job(first=True):
                         print('material is:', material)
                         predictor = material.predictor_set.all()[0]
                         print('predictor is:', predictor)
-                        trader = predictor.trader_set.get(user=user)[0]
+                        trader = predictor.trader_set.get(user=user)
                         print('trader is:', trader)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
                         print('df tail is:', df.tail(2))
