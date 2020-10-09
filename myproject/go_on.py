@@ -130,9 +130,12 @@ def do_the_job(first=True):
                     for finance in finances:
                         material = Material.objects.get(name=finance.symbol)
                         predictor = material.predictor_set.all()[0]
-                        trader = predictor.trader_set.get(user=user)
+                        trader = predictor.trader_set.get(user=user)[0]
+                        print('trader is:', trader)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                        close = df.tail(1)['Close']
+                        print('df tail is:', df.tail(2))
+                        close = float(df.tail(1)['Close'])
+                        print('close is:', close)
                         prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
                         print('prediction is:', prediction)
                         list_of_states.append([trader, close, df, finance, prediction, states, predictor])
@@ -190,5 +193,6 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        do_the_job(first=True)
+        input('press enter if you want to make a operation')
+        do_the_job(first=False)
         time.sleep(1)
