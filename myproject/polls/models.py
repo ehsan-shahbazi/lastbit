@@ -182,14 +182,15 @@ class Finance(models.Model):
         print(quantity)
         if quantity > 0.001:
             print('order sent')
-            if not self.have_btc():
+            if not self.have_btc(str(self.symbol), price):
                 order = client.order_market_buy(
                     symbol=self.symbol,
                     quantity=quantity)
         return True
 
-    def sell(self, percent=0.95):
+    def sell(self, price, percent=0.95):
         """
+        :param price
         :param percent: how much of your asset do you want to sell? 100 mean all of that
         :return:
         """
@@ -201,7 +202,7 @@ class Finance(models.Model):
         print(quantity)
         if quantity > 0.001:
             print('order sent')
-            if self.have_btc():
+            if self.have_btc(str(self.symbol), price):
                 order = client.order_market_sell(
                     symbol=self.symbol,
                     quantity=quantity)
@@ -272,7 +273,7 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            if not self.have_btc():
+            if not self.have_btc(symbol=str(self.symbol), close=stop):
                 print('order sent')
                 order = client.create_order(
                     symbol=self.symbol,
@@ -300,7 +301,7 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            if self.have_btc():
+            if self.have_btc(symbol=str(self.symbol), close=stop):
                 print('order sent')
                 order = client.create_order(
                     symbol=self.symbol,
@@ -409,7 +410,7 @@ class Predictor(models.Model):
         :param df: It should have just OCHLV and in string
         :return: a list which is input
         """
-        print('have_money is:', have_money)
+        # print('have_money is:', have_money)
         df = df[["Open", "High", "Low", "Close", "Volume"]]
         df['Close'] = pd.to_numeric(df['Close'])
         df['Open'] = pd.to_numeric(df['Open'])
@@ -484,7 +485,7 @@ class Predictor(models.Model):
 
         # print('and inputs are:')
         # print(inputs[-20:])
-        print('we had: ', len(inputs), ' inputs')
+        # print('we had: ', len(inputs), ' inputs')
         return inputs
 
     def predict(self, df='', gamma=0.65, have_money=True):
@@ -575,39 +576,30 @@ class Trader(models.Model):
         if investigate_mode:
             return prediction, states
 
-        print('prediction is:', prediction)
+        # print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
                 if have_btc:
-                    self.cancel_all()
-                    # self.stop_sell(prediction[1]['stop_price'])
+                    self.cancel_all(speaker=speaker)
                 else:
-                    self.buy(close)
-                    self.cancel_all()
-                    # self.stop_sell(prediction[1]['stop_price'])
-                print('BUY')
+                    self.buy(close, speaker=speaker)
+                    self.cancel_all(speaker=speaker)
                 return True, states
             elif prediction[0] == 'SELL':
                 if have_btc:
-                    self.sell(close)
-                    # self.cancel_all()
-                    # self.stop_buy(prediction[1]['start_price'])
+                    self.sell(close, speaker=speaker)
                 else:
-                    self.cancel_all()
-                    # self.stop_buy(prediction[1]['start_price'])
-                print('SELL')
+                    self.cancel_all(speaker=speaker)
                 return True, states
             else:
-                print(prediction)
-                self.cancel_all()
+                self.cancel_all(speaker=speaker)
                 if have_btc:
-                    self.stop_sell(prediction[1]['stop_price'])
+                    self.stop_sell(prediction[1]['stop_price'], speaker=speaker)
                 else:
-                    self.stop_buy(prediction[1]['start_price'])
+                    self.stop_buy(prediction[1]['start_price'], speaker=speaker)
             return True, states
 
-    def buy(self, close):
-        speaker = self.user.finance_set.all()[0]
+    def buy(self, close, speaker):
         price = speaker.get_price()
         if price:
             price = price
@@ -615,7 +607,6 @@ class Trader(models.Model):
             price = close
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
                 speaker.buy(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
@@ -626,10 +617,8 @@ class Trader(models.Model):
         record = Activity(trader=self, action='buy', date_time=timezone.now(), real=self.active, price=price,
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
-        print('record saved')
 
-    def sell(self, close):
-        speaker = self.user.finance_set.all()[0]
+    def sell(self, close, speaker):
         price = speaker.get_price()
         if price:
             price = price
@@ -637,8 +626,7 @@ class Trader(models.Model):
             price = close
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
-                speaker.sell(percent=0.95)
+                speaker.sell(percent=0.95, price=price)
         mat = self.predictor.material
         mat.price = price
         mat.save()
@@ -649,54 +637,44 @@ class Trader(models.Model):
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
 
-    def cancel_all(self):
-        speaker = self.user.finance_set.all()[0]
+    def cancel_all(self, speaker):
         speaker.cancel_all_orders()
         return True
 
-    def limit_buy(self, limit):
-        speaker = self.user.finance_set.all()[0]
+    def limit_buy(self, limit, speaker):
         price = limit
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
                 speaker.buy_limit(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
 
-    def limit_sell(self, limit):
-        speaker = self.user.finance_set.all()[0]
+    def limit_sell(self, limit, speaker):
         price = limit
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
                 speaker.sell_limit(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
 
-    def stop_buy(self, limit):
-        speaker = self.user.finance_set.all()[0]
+    def stop_buy(self, limit, speaker):
         price = limit
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
                 speaker.buy_stop(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
         mat.save()
 
-    def have_btc(self):
-        speaker = self.user.finance_set.all()[0]
+    def have_btc(self, speaker):
         return speaker.have_btc()
 
-    def stop_sell(self, limit):
-        speaker = self.user.finance_set.all()[0]
+    def stop_sell(self, limit, speaker):
         price = limit
         if self.active:
             if self.type == '1':
-                print('the trader is active and type is 1')
                 speaker.sell_stop(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
