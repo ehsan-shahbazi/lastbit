@@ -128,8 +128,11 @@ def do_the_job(first=True):
                 else:
                     print('we do not have any active coin lets search...')
                     for finance in finances:
+                        print('symbol is:', finance.symbol)
                         material = Material.objects.get(name=finance.symbol)
+                        print('material is:', material)
                         predictor = material.predictor_set.all()[0]
+                        print('predictor is:', predictor)
                         trader = predictor.trader_set.get(user=user)[0]
                         print('trader is:', trader)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
