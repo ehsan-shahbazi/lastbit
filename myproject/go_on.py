@@ -142,7 +142,9 @@ def do_the_job(first=True):
                         prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
                         print('for this coin prediction is:', prediction)
                         list_of_states.append([trader, close, df, finance, prediction, states, predictor])
-                    list_of_states.sort(key=lambda x: (x[4][1]['start_price'] - x[1]) / x[2]['Close'].std())
+                    x = list_of_states[0]
+                    print('parameters are:', x[4][1]['start_price'] - x[1], x[2]['Close'].std())
+                    list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) / x[2]['Close'].std()))
                     trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
                     print('the best thing to trade looks:', finance.symbol, prediction)
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
