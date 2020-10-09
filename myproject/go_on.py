@@ -190,6 +190,5 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        input('press enter if you want to make a operation')
-        do_the_job(first=False)
+        do_the_job(first=True)
         time.sleep(1)

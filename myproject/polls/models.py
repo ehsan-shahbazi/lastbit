@@ -62,7 +62,6 @@ class Histogram:
         hist = self.prices
         the_strategy = self.strategy
         price = hist[-1]
-        print('im in histogram and price is:', price)
         """
         :param hist: [price1, price2, price3, ...]
         :param price: current price
@@ -80,9 +79,6 @@ class Histogram:
 
         alpha = pi / tot
         output = []
-        print('current alpha is:', alpha)
-        # make decision
-        # set the last price set
         last_price_set = 0
         if state == 0:
             if alpha >= 0.98:
@@ -98,7 +94,6 @@ class Histogram:
 
         elif state == 1:
             if alpha <= 0.5:
-                print('we must sell fast')
                 output.append('SELL')
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = price
@@ -108,11 +103,9 @@ class Histogram:
                 output.append(self.stop_loss(0.98, 0.5))
                 last_price_set = self.stop_loss(0.98, 0.5)['stop_price']
             else:
-                print('we should sell in:', state_var1 * state_max_from_last)
                 output.append('DON\'T MOVE!')
                 output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
-            print('the output is:', output)
             return output, last_price_set
         elif state == 2:
             if alpha <= 0.5:
@@ -421,10 +414,8 @@ class Predictor(models.Model):
             # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
             new_high = max(list(df['High'].tail(n=2)))
             new_low = min(list(df['Low'].tail(n=2)))
-            print('new low and new high are:', new_low, new_high)
             tree1 = Histogram(df)
             prices = tree1.stop_loss(0.98, 0.5)
-            print('prices are: ', prices)
             state = self.state
             state_have_money = self.state_have_money
             state_last_price_set = self.state_last_price_set
@@ -435,7 +426,6 @@ class Predictor(models.Model):
             state_var1 = self.state_var1
             state_var2 = self.state_var2
             state_var3 = self.state_var3
-            print(have_money, state_have_money)
             if prices['stop_price'] > new_low:
                 state = 0
 
@@ -467,18 +457,12 @@ class Predictor(models.Model):
             state_max_from_last = float(max(state_max_from_last, new_high))
             state_min_from_last = float(min(state_min_from_last, new_low))
             state_have_money = have_money
-            print('the last state is:', self.state)
             return (df, (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
                          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price))
         elif self.type == 'MAD':
             df = make_all_ta_things(df)
-            print(df.tail())
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
-
-        # print('and inputs are:')
-        # print(inputs[-20:])
-        # print('we had: ', len(inputs), ' inputs')
         return inputs
 
     def predict(self, df='', gamma=0.65, have_money=True):
@@ -494,12 +478,8 @@ class Predictor(models.Model):
         (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
         """
-        # print(tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3]))
         temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
-        # print('temp is:', temp)
-        print(out[1][2], temp[1])
         new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
-        # print('hi')
         return temp[0], new_temp
 
 
@@ -569,7 +549,6 @@ class Trader(models.Model):
         if investigate_mode:
             return prediction, states
 
-        # print('prediction is:', prediction)
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
                 if have_btc:
