@@ -103,7 +103,8 @@ def do_the_job(first=True):
                             prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
                             print('prediction is:', prediction)
                             list_of_states.append([trader, close, df, finance, prediction, states, predictor])
-                        list_of_states.sort(key=lambda x: (x[4]['start_price'] - x[1]) / x[2]['Close'].std())
+                        list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
+                                                           pd.to_numeric(x[2]['Close']).std()))
                         trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
                         print('the best thing to trade looks:', finance.symbol, prediction)
                         is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
@@ -128,30 +129,16 @@ def do_the_job(first=True):
                 else:
                     print('we do not have any active coin lets search...')
                     for finance in finances:
-                        print('symbol is:', finance.symbol)
                         material = Material.objects.get(name=finance.symbol)
-                        print('material is:', material)
                         predictor = material.predictor_set.all()[0]
-                        print('predictor is:', predictor)
                         trader = predictor.trader_set.get(user=user)
-                        print('trader is:', trader)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                        print('df tail is:', df.tail(2))
                         close = float(df.tail(1)['Close'])
-                        print('close is:', close)
                         prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
-                        print('for this coin prediction is:', prediction)
                         list_of_states.append([trader, close, df, finance, prediction, states, predictor])
-                    # print(list_of_states)
-                    # x = list_of_states[0]
-                    # print('parameters are:', x[4][1]['start_price'] - x[1])
-                    # print('close is:', x[2]['Close'])
-                    # print('std is:', pd.to_numeric(x[2]['Close']).std())
                     list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
                                                        pd.to_numeric(x[2]['Close']).std()))
-                    print('this is our best coins trader', tuple(list_of_states[0])[0])
                     trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
-                    print('the best thing to trade looks:', finance.symbol, prediction)
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
                     if is_done:
                         predictor.state = new_states[0]

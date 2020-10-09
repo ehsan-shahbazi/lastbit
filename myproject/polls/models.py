@@ -266,15 +266,12 @@ class Finance(models.Model):
         :param percent: how much of the budget? 100 means all of it
         :return:
         """
-        print('buy stop')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / stop
         quantity = round(quantity, 6)
-        print(quantity)
         if quantity > 0.001:
             if not self.have_btc(symbol=str(self.symbol), close=stop):
-                print('order sent')
                 order = client.create_order(
                     symbol=self.symbol,
                     type='STOP_LOSS_LIMIT',
@@ -294,15 +291,12 @@ class Finance(models.Model):
         :param percent: how much of the asset? 100 means all of it
         :return:
         """
-        print('sell stop')
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
         quantity = round(quantity, 6)
-        print(quantity)
         if quantity > 0.001:
             if self.have_btc(symbol=str(self.symbol), close=stop):
-                print('order sent')
                 order = client.create_order(
                     symbol=self.symbol,
                     side=SIDE_SELL,
@@ -311,19 +305,18 @@ class Finance(models.Model):
                     timeInForce='GTC',
                     stopPrice=str(stop),
                     price=str(stop))
+                print(order)
             return True
         return False
 
     def cancel_all_orders(self):
-        print('cancel all')
         client = Client(self.user.api_key, self.user.secret_key)
         orders = client.get_open_orders(symbol=self.symbol)
-        print('order list is:', orders)
+        print('order list was:', orders[0]['symbol'], orders[0]['price'], orders[0]['type'])
         for order in orders:
             if order['symbol'] == self.symbol:
                 time.sleep(1)
                 the_answer = client.cancel_order(symbol=self.symbol, orderId=order['orderId'])
-        print('hi')
         return True
 
     def give_ohlcv(self, interval='1m', size=12):
