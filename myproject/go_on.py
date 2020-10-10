@@ -140,6 +140,7 @@ def do_the_job(first=True):
                                                        pd.to_numeric(x[2]['Close']).std()))
                     trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
+                    print('is done and new_states are:', is_done, new_states)
                     if is_done:
                         predictor.state = new_states[0]
                         predictor.state_have_money = new_states[1]
