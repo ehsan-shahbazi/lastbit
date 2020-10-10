@@ -66,9 +66,13 @@ def do_the_job(first=True):
                 list_of_states = []
                 active_predictors = []  # predictors which have nonzero state
                 finances = user.finance_set.all()
+                print(finances)
                 for finance in finances:
+                    print(finance.symbol)
                     material = Material.objects.get(name=finance.symbol)
+                    print(material)
                     predictor = material.predictor_set.all()[0]
+                    print(predictor)
                     if predictor.state != 0:
                         active_predictors.append([predictor, finance])
                 if len(active_predictors) == 1:
