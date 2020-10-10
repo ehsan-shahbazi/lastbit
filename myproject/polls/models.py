@@ -288,7 +288,9 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='BTC')['free'])
         quantity = balance * percent
         quantity = round(quantity, 6)
+        print('quantity and price are:', quantity, stop)
         if quantity > 0.001:
+            print(self.have_btc(symbol=str(self.symbol), close=stop))
             if self.have_btc(symbol=str(self.symbol), close=stop):
                 order = client.create_order(
                     symbol=self.symbol,
@@ -573,9 +575,12 @@ class Trader(models.Model):
             else:
                 print('trying to cancel all and speaker is:', speaker)
                 self.cancel_all(speaker=speaker)
+                print('have btc is', have_btc)
                 if have_btc:
+                    print(prediction[1]['stop_price'])
                     self.stop_sell(prediction[1]['stop_price'], speaker=speaker)
                 else:
+                    print(prediction[1]['start_price'])
                     self.stop_buy(prediction[1]['start_price'], speaker=speaker)
             return True, states
 
@@ -656,6 +661,7 @@ class Trader(models.Model):
         price = limit
         if self.active:
             if self.type == '1':
+                print('trying to sell stop')
                 speaker.sell_stop(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
