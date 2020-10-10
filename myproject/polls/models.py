@@ -290,10 +290,20 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print('quantity and price are:', quantity, stop)
         if quantity > 0.001:
-            print(self.have_btc(symbol=str(self.symbol), close=stop))
+            # print(self.have_btc(symbol=str(self.symbol), close=stop))
             if self.have_btc(symbol=str(self.symbol), close=stop):
+                print('parameters are:', self.symbol, SIDE_SELL)
+                order = client.create_test_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_SELL,
+                    type='STOP_LOSS_LIMIT',
+                    quantity=quantity,
+                    timeInForce='GTC',
+                    stopPrice=str(stop),
+                    price=str(stop))
+                print('order is:', order)
                 order = client.create_order(
-                    symbol=self.symbol,
+                    symbol=str(self.symbol),
                     side=SIDE_SELL,
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
