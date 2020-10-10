@@ -183,7 +183,7 @@ def do_the_job(first=True):
                         predictor.save()
                         print('saved!')
                 return True
-    except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+    except ReadTimeoutError:  # (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)
     finally:

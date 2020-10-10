@@ -303,7 +303,9 @@ class Finance(models.Model):
         return False
 
     def cancel_all_orders(self):
+        print('key and secret key are and symbol:', self.user.api_key, self.user.secret_key, self.symbol)
         client = Client(self.user.api_key, self.user.secret_key)
+        print('client is:', client)
         orders = client.get_open_orders(symbol=self.symbol)
         print('order list was:', orders[0]['symbol'], orders[0]['price'], orders[0]['type'])
         for order in orders:
