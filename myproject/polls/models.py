@@ -450,10 +450,6 @@ class Predictor(models.Model):
                 state = 0
 
             if have_money != state_have_money:
-                print('im here')
-                # make the state
-                # make the last_buy_price and last_sell_price
-                # make max_from_last and min_from_last
                 if have_money:
                     if prices['stop_price'] > new_low:
                         state = 0
@@ -467,7 +463,6 @@ class Predictor(models.Model):
                         state_min_from_last = state_last_price_set
                         state_max_from_last = state_last_price_set
                 else:
-                    print('im here in state 1')
                     state = 1
                     last_buy = state_last_price_set
                     state_last_buy_price = last_buy
@@ -563,11 +558,8 @@ class Trader(models.Model):
             speaker = self.user.finance_set.all()[0]
         else:
             speaker = finance
-        print('symbol and close are:', speaker.symbol, close)
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
-        print('have BTC is:', have_btc)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
-        print('in the predictor.predict we have prediction and states as:', prediction, states)
         if investigate_mode:
             return prediction, states
 
@@ -586,11 +578,8 @@ class Trader(models.Model):
                     self.cancel_all(speaker=speaker)
                 return True, states
             else:
-                print('trying to cancel all and speaker is:', speaker)
                 self.cancel_all(speaker=speaker)
-                print('have btc is', have_btc)
                 if have_btc:
-                    print(prediction[1]['stop_price'])
                     self.stop_sell(prediction[1]['stop_price'], speaker=speaker)
                 else:
                     print(prediction[1]['start_price'])
@@ -674,7 +663,6 @@ class Trader(models.Model):
         price = limit
         if self.active:
             if self.type == '1':
-                print('trying to sell stop')
                 speaker.sell_stop(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price

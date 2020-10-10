@@ -183,7 +183,7 @@ def do_the_job(first=True):
                         predictor.save()
                         print('saved!')
                 return True
-    except ReadTimeoutError:  # (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+    except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)
     finally:
@@ -192,6 +192,5 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        input('press enter to make a operation...')
-        do_the_job(first=False)
+        do_the_job(first=True)
         time.sleep(1)
