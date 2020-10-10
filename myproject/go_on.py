@@ -192,5 +192,6 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        do_the_job(first=True)
+        input('press enter to make a job')
+        do_the_job(first=False)
         time.sleep(1)
