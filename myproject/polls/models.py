@@ -306,8 +306,11 @@ class Finance(models.Model):
         print('key and secret key are and symbol:', self.user.api_key, self.user.secret_key, self.symbol)
         client = Client(self.user.api_key, self.user.secret_key)
         print('client is:', client)
-        orders = client.get_open_orders(symbol=self.symbol)
-        print('order list was:', orders[0]['symbol'], orders[0]['price'], orders[0]['type'])
+        orders = client.get_open_orders()
+        if len(orders) > 0:
+            print('order list was:', orders[0]['symbol'], orders[0]['price'], orders[0]['type'])
+        else:
+            print('we have no order')
         for order in orders:
             if order['symbol'] == self.symbol:
                 time.sleep(1)
