@@ -139,6 +139,7 @@ def do_the_job(first=True):
                     list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
                                                        pd.to_numeric(x[2]['Close']).std()))
                     trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
+                    print('going to trader.trade trader and predictor is:', trader, predictor)
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
                     print('is done and new_states are:', is_done, new_states)
                     if is_done:
