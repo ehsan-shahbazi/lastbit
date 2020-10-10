@@ -566,6 +566,7 @@ class Trader(models.Model):
                     self.cancel_all(speaker=speaker)
                 return True, states
             else:
+                print('trying to cancel all and speaker is:', speaker)
                 self.cancel_all(speaker=speaker)
                 if have_btc:
                     self.stop_sell(prediction[1]['stop_price'], speaker=speaker)
@@ -611,7 +612,8 @@ class Trader(models.Model):
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
 
-    def cancel_all(self, speaker):
+    @staticmethod
+    def cancel_all(speaker):
         speaker.cancel_all_orders()
         return True
 
