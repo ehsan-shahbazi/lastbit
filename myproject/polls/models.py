@@ -271,8 +271,8 @@ class Finance(models.Model):
                     side=SIDE_BUY,
                     timeInForce='GTC',
                     quantity=quantity,
-                    stopPrice=str(stop),
-                    price=str(stop))
+                    stopPrice=str(stop)[0:8],
+                    price=str(stop)[0:8])
                 print(order)
             return True
         return False
@@ -299,8 +299,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop),
-                    price=str(stop))
+                    stopPrice=str(stop)[0:8],
+                    price=str(stop)[0:8])
                 print('order is:', order)
                 order = client.create_order(
                     symbol=str(self.symbol),
@@ -308,8 +308,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop),
-                    price=str(stop))
+                    stopPrice=str(stop)[0:8],
+                    price=str(stop)[0:8])
                 print(order)
             return True
         return False
