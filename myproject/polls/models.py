@@ -177,7 +177,7 @@ class Finance(models.Model):
             print('order sent')
             if not self.have_btc(str(self.symbol), price):
                 order = client.order_market_buy(
-                    symbol=self.symbol,
+                    symbol=str(self.symbol),
                     quantity=quantity)
         return True
 
@@ -197,7 +197,7 @@ class Finance(models.Model):
             print('order sent')
             if self.have_btc(str(self.symbol), price):
                 order = client.order_market_sell(
-                    symbol=self.symbol,
+                    symbol=str(self.symbol),
                     quantity=quantity)
         return True
 
@@ -266,7 +266,7 @@ class Finance(models.Model):
         if quantity > 0.001:
             if not self.have_btc(symbol=str(self.symbol), close=stop):
                 order = client.create_order(
-                    symbol=self.symbol,
+                    symbol=str(self.symbol),
                     type='STOP_LOSS_LIMIT',
                     side=SIDE_BUY,
                     timeInForce='GTC',
@@ -324,9 +324,8 @@ class Finance(models.Model):
         else:
             print('we have no order')
         for order in orders:
-            if order['symbol'] == self.symbol:
-                time.sleep(1)
-                the_answer = client.cancel_order(symbol=self.symbol, orderId=order['orderId'])
+            time.sleep(1)
+            the_answer = client.cancel_order(symbol=str(self.symbol), orderId=order['orderId'])
         return True
 
     def give_ohlcv(self, interval='1m', size=12):
