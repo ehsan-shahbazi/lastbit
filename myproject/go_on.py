@@ -77,7 +77,7 @@ def do_the_job(first=True):
                     finance = active_predictors[0][1]
                     trader = predictor.trader_set.get(user=user)
                     df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                    close = df.tail(1)['Close']
+                    close = float(df.tail(1)['Close'])
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
                     if is_done:
                         predictor.state = new_states[0]
@@ -99,7 +99,7 @@ def do_the_job(first=True):
                             predictor = material.predictor_set.all()[0]
                             trader = predictor.trader_set.get(user=user)
                             df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                            close = df.tail(1)['Close']
+                            close = float(df.tail(1)['Close'])
                             prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
                             print('prediction is:', prediction)
                             list_of_states.append([trader, close, df, finance, prediction, states, predictor])
