@@ -157,8 +157,12 @@ class Finance(models.Model):
         :return: if we have btc then returns true else false
         """
         client = Client(self.user.api_key, self.user.secret_key)
-        usd = float(client.get_asset_balance(asset='USDT')['free'])
-        btc = float(client.get_asset_balance(asset=symbol.replace('USDT', ''))['free'])
+        usd = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
+                                                                            ['locked'])
+        btc = float(client.get_asset_balance(asset=symbol.replace('USDT', ''))['free']) + float(client.get_asset_balance
+                                                                                                (asset=symbol.replace(
+                                                                                                    'USDT', ''))
+                                                                                                ['locked'])
         return usd < (btc * close)
 
     def buy(self, price, percent=0.95):
