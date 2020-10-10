@@ -463,11 +463,16 @@ class Predictor(models.Model):
                         state_min_from_last = state_last_price_set
                         state_max_from_last = state_last_price_set
                 else:
-                    state = 1
-                    last_buy = state_last_price_set
-                    state_last_buy_price = last_buy
-                    state_min_from_last = state_last_price_set
-                    state_max_from_last = state_last_price_set
+                    if self.state == 0:
+                        state = 1
+                        last_buy = state_last_price_set
+                        state_last_buy_price = last_buy
+                        state_min_from_last = state_last_price_set
+                        state_max_from_last = state_last_price_set
+                    else:
+                        state = 1
+                        last_buy = state_last_price_set
+                        state_last_buy_price = last_buy
 
             state_max_from_last = float(max(state_max_from_last, new_high))
             state_min_from_last = float(min(state_min_from_last, new_low))
