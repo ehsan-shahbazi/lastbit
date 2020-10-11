@@ -1,7 +1,0 @@
-venv
-.idea/
-*.sqlite3
-myproject/.gitignore
-myproject/data/
-myproject/polls/__pycache__/
-myproject/polls/migrations/
