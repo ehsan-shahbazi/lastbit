@@ -104,7 +104,8 @@ class Histogram:
                 last_price_set = self.stop_loss(0.98, 0.5)['stop_price']
             else:
                 output.append('DON\'T MOVE!')
-                output.append({'start_price': 1000000, 'stop_price': state_var1 * state_max_from_last})
+                output.append({'start_price': self.stop_loss(0.98, 0.5)['start_price'],
+                               'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
             return output, last_price_set
         elif state == 2:
@@ -118,7 +119,8 @@ class Histogram:
                 last_price_set = price
             else:
                 output.append('DON\'T MOVE!')
-                output.append({'start_price': state_last_sell_price, 'stop_price': 0})
+                output.append({'start_price': state_last_sell_price,
+                               'stop_price': self.stop_loss(0.98, 0.5)['stop_price']})
                 last_price_set = state_last_sell_price
             return output, last_price_set
 
@@ -416,7 +418,6 @@ class Predictor(models.Model):
         :param df: It should have just OCHLV and in string
         :return: a list which is input
         """
-        # print('have_money is:', have_money)
         df = df[["Open", "High", "Low", "Close", "Volume"]]
         df['Close'] = pd.to_numeric(df['Close'])
         df['Open'] = pd.to_numeric(df['Open'])
@@ -428,7 +429,6 @@ class Predictor(models.Model):
             df = ta.add_all_ta_features(df, open="Open", high="High", low="Low", close="Close",
                                         volume="Volume", fillna=True)
             for index, data in df.iterrows():
-                # print(list(data))
                 inputs.append(list(data))
         elif self.type == 'HIST':
             # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
@@ -451,7 +451,7 @@ class Predictor(models.Model):
 
             if have_money != state_have_money:
                 if have_money:
-                    if prices['stop_price'] > new_low:
+                    if (prices['stop_price'] > new_low) | (self.state == 0):
                         state = 0
                         state_last_sell_price = prices['stop_price']
                         state_min_from_last = self.state_last_price_set
@@ -460,8 +460,7 @@ class Predictor(models.Model):
                     else:
                         state = 2
                         state_last_sell_price = state_max_from_last * 0.99
-                        state_min_from_last = state_last_price_set
-                        state_max_from_last = state_last_price_set
+
                 else:
                     if self.state == 0:
                         state = 1
