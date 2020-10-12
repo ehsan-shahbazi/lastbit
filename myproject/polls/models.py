@@ -147,6 +147,9 @@ class Finance(models.Model):
     symbol = models.CharField(name='symbol', default='BTCUSDT', max_length=20)
     # todo: check the order responses to figure out the transactions are done perfectly
 
+    def __str__(self):
+        return str(self.user.name) + str(self.symbol)
+
     def get_time(self):
         client = Client(self.user.api_key, self.user.secret_key)
         timestamp = client.get_server_time()
@@ -500,6 +503,9 @@ class Predictor(models.Model):
         temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
         new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
         return temp[0], new_temp
+
+    def __str__(self):
+        return str(self.material) + ' in state: ' + str(self.state)
 
 
 class Trader(models.Model):
