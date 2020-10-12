@@ -182,8 +182,8 @@ class Finance(models.Model):
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
-            print('order sent')
             if not self.have_btc(str(self.symbol), price):
+                print('order sent')
                 order = client.order_market_buy(
                     symbol=str(self.symbol),
                     quantity=quantity)
@@ -598,13 +598,10 @@ class Trader(models.Model):
             return True, states
 
     def buy(self, close, speaker):
-        price = speaker.get_price()
-        if price:
-            price = price
-        else:
-            price = close
+        price = close
         if self.active:
             if self.type == '1':
+                print('we want to buy in: ', price)
                 speaker.buy(price, percent=0.95)
         mat = self.predictor.material
         mat.price = price
