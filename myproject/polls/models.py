@@ -339,8 +339,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:6],
-                    price=str(stop)[0:6])
+                    stopPrice=str(stop)[0:8],
+                    price=str(stop)[0:8])
                 print('order is:', order)
                 order = client.create_order(
                     symbol=str(self.symbol),
@@ -348,8 +348,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:6],
-                    price=str(stop)[0:6])
+                    stopPrice=str(stop)[0:8],
+                    price=str(stop)[0:8])
                 print(order)
             return True
         return False
