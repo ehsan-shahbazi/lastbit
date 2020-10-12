@@ -568,6 +568,7 @@ class Trader(models.Model):
             speaker = self.user.finance_set.all()[0]
         else:
             speaker = finance
+        print('finding have_btc symbol and close are:', speaker.symbol, close)
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
         if investigate_mode:
