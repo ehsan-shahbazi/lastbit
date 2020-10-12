@@ -197,6 +197,5 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        input('press enter:')
-        do_the_job(first=False)
+        do_the_job(first=True)
         time.sleep(1)
