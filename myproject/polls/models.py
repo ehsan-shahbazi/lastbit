@@ -187,15 +187,13 @@ class Finance(models.Model):
                     symbol=str(self.symbol),
                     side=SIDE_BUY,
                     type=ORDER_TYPE_MARKET,
-                    quantity=quantity,
-                    timeInForce='GTC')
+                    quantity=quantity)
                 print(order)
                 order = client.create_order(
                     symbol=str(self.symbol),
                     side=SIDE_BUY,
                     type=ORDER_TYPE_MARKET,
-                    quantity=quantity,
-                    timeInForce='GTC')
+                    quantity=quantity)
                 print(order)
         return True
 
