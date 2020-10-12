@@ -183,6 +183,13 @@ class Finance(models.Model):
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
                 print('order sent for: ', str(self.symbol), quantity)
+                order = client.create_test_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_BUY,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=quantity,
+                    timeInForce='GTC')
+                print(order)
                 order = client.create_order(
                     symbol=str(self.symbol),
                     side=SIDE_BUY,
