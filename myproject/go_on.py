@@ -71,10 +71,10 @@ def re_sample(the_df, method='1H'):
 
 class Simulator:
     def __init__(self):
-        self.step_size = 30             # Step time
-        self.current_step = 1000000      # The first price in the historical data
-        self.df_size = 7000             # It must be less than current step
-        self.resample_method = '15Min'  # It can be '1H' , 'nMin' , ...
+        self.step_size = 30                 # Step time
+        self.current_step = 1000000         # The first price in the historical data
+        self.df_size = 7000                 # It must be less than current step
+        self.resample_method = '15Min'      # It can be '1H' , 'nMin' , ...
         self.bit_df = pd.read_csv('./data/bitstampUSD_1-min_data_2012-01-01_to_2020-04-22.csv').dropna()
         self.user = User.objects.get(name='simulator')
         self.predictor = Predictor.objects.all()[0]
@@ -100,7 +100,6 @@ class Simulator:
             print(self.current_step * 100 / tot, ' % completed.')
             df, new_df = self.give_df()
             close = df.tail(1)['Close'].item()
-            # print('close is:', close)
             if have_btc not in [1, 0]:
                 print('have_btc is', have_btc)
                 input('ooppss!')
@@ -135,7 +134,7 @@ class Simulator:
                 real_activities.append(activity)
         for activity in real_activities:
             # print(activity)
-            # input('so we have a activity and we must save it...')
+            # input('high and low are: ' + str(new_df['High'][0]) + ' and ' + str(new_df['Low'][0]))
             if activity[0] == 'stop_buy':
 
                 my_activity = Activity(trader=self.trader, action='buy', price=activity[1])

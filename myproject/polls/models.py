@@ -443,19 +443,18 @@ class Predictor(models.Model):
                 # make the last_buy_price and last_sell_price
                 # make max_from_last and min_from_last
                 if have_money:
+
                     if prices['stop_price'] > new_low:
                         state = 0
                         state_last_sell_price = prices['stop_price']
                         state_min_from_last = self.state_last_price_set
                         state_max_from_last = self.state_last_price_set
-
                     else:
                         state = 2
-                        state_last_sell_price = state_max_from_last * 0.99
-                        # state_min_from_last = state_last_price_set
-                        # state_max_from_last = state_last_price_set
+                        state_last_sell_price = float(state_max_from_last) * float(self.state_var1)
+
                 else:
-                    # print('im here in state 1')
+
                     if self.state == 0:
                         state = 1
                         last_buy = state_last_price_set
@@ -470,7 +469,6 @@ class Predictor(models.Model):
             state_max_from_last = float(max(state_max_from_last, new_high))
             state_min_from_last = float(min(state_min_from_last, new_low))
             state_have_money = have_money
-            # print('the last state is:', self.state)
             return (df, (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
                          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price))
 
