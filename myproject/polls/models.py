@@ -177,12 +177,12 @@ class Finance(models.Model):
         """
         print('buy')
         client = Client(self.user.api_key, self.user.secret_key)
-        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
+                                                                                ['locked'])
         quantity = balance * percent / price
         quantity = round(quantity, 2)
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
-                print('order sent for: ', str(self.symbol), quantity)
                 order = client.create_test_order(
                     symbol=str(self.symbol),
                     side=SIDE_BUY,
@@ -205,16 +205,26 @@ class Finance(models.Model):
         """
         print('sell')
         client = Client(self.user.api_key, self.user.secret_key)
-        balance = float(client.get_asset_balance(asset='BTC')['free'])
+        balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
+                  float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
         quantity = round(quantity, 6)
         print(quantity)
         if quantity > 0.001:
             print('order sent')
             if self.have_btc(str(self.symbol), price):
-                order = client.order_market_sell(
+                order = client.create_test_order(
                     symbol=str(self.symbol),
+                    side=SIDE_SELL,
+                    type=ORDER_TYPE_MARKET,
                     quantity=quantity)
+                print(order)
+                order = client.create_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_SELL,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=quantity)
+                print(order)
         return True
 
     def get_price(self):
@@ -276,7 +286,8 @@ class Finance(models.Model):
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
+                                                                                ['locked'])
         quantity = balance * percent / stop
         quantity = round(quantity, 6)
         if quantity > 0.001:
@@ -301,7 +312,8 @@ class Finance(models.Model):
         :return:
         """
         client = Client(self.user.api_key, self.user.secret_key)
-        balance = float(client.get_asset_balance(asset='BTC')['free'])
+        balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
+                  float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
         quantity = round(quantity, 6)
         print('quantity and price are:', quantity, stop)
