@@ -327,7 +327,7 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        quantity = round(quantity, 4)
+        quantity = round(quantity, 2)
         print('quantity and price are:', quantity, stop)
         if quantity > 0.001:
             # print(self.have_btc(symbol=str(self.symbol), close=stop))
