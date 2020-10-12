@@ -179,14 +179,16 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / price
-        quantity = round(quantity, 6)
-        print(quantity)
+        quantity = round(quantity, 4)
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
-                print('order sent')
-                order = client.order_market_buy(
+                print('order sent for: ', str(self.symbol), quantity)
+                order = client.create_order(
                     symbol=str(self.symbol),
-                    quantity=float(str(quantity)[0:6]))
+                    side=SIDE_BUY,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=quantity,
+                    timeInForce='GTC')
                 print(order)
         return True
 
