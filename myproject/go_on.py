@@ -71,7 +71,7 @@ def do_the_job(first=True):
                     print(finance.symbol)
                     material = Material.objects.get(name=finance.symbol)
                     print(material)
-                    predictor = material.predictor_set.get(user_name=user.name)[0]
+                    predictor = material.predictor_set.get(user_name=str(user.name))[0]
                     print(predictor)
                     if predictor.state != 0:
                         active_predictors.append([predictor, finance])
