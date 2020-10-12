@@ -186,7 +186,8 @@ class Finance(models.Model):
                 print('order sent')
                 order = client.order_market_buy(
                     symbol=str(self.symbol),
-                    quantity=quantity)
+                    quantity=float(str(quantity)[0:6]))
+                print(order)
         return True
 
     def sell(self, price, percent=0.95):
