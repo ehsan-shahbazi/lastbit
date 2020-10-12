@@ -57,95 +57,60 @@ def do_the_job(first=True):
         wait_until(timestamp, secs=10)
     else:
         time.sleep(5)
-    try:
-        if multi_coin:
-            print('starting multi coin trades')
-            users = User.objects.all()
-            for user in users:
-                print('user works:', user)
-                list_of_states = []
-                active_predictors = []  # predictors which have nonzero state
-                finances = user.finance_set.all()
-                print(finances)
-                for finance in finances:
-                    print(finance.symbol)
-                    material = Material.objects.get(name=finance.symbol)
-                    print(material)
-                    predictor = material.predictor_set.get(user_name=user.name)
-                    print(predictor)
-                    if predictor.state != 0:
-                        active_predictors.append([predictor, finance])
-                if len(active_predictors) == 1:
-                    print('user has active coin:', active_predictors)
-                    predictor = active_predictors[0][0]
-                    finance = active_predictors[0][1]
-                    trader = predictor.trader_set.get(user=user)
-                    df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                    close = float(df.tail(1)['Close'])
-                    is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-                    if is_done:
-                        predictor.state = new_states[0]
-                        predictor.state_have_money = new_states[1]
-                        predictor.state_last_price_set = new_states[2]
-                        predictor.state_last_buy_price = new_states[3]
-                        predictor.state_max_from_last = new_states[4]
-                        predictor.state_min_from_last = new_states[5]
-                        predictor.state_var1 = new_states[6]
-                        predictor.state_var2 = new_states[7]
-                        predictor.state_var3 = new_states[8]
-                        predictor.state_last_sell_price = new_states[9]
-                        predictor.save()
-                        print('saved!')
-                    if new_states[0] == 0:
-                        print('the coin is been sold and dis-activated')
-                        for finance in finances:
-                            material = Material.objects.get(name=finance.symbol)
-                            predictor = material.predictor_set.get(user_name=user.name)[0]
-                            trader = predictor.trader_set.get(user=user)
-                            df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-                            close = float(df.tail(1)['Close'])
-                            prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
-                            print('prediction is:', prediction)
-                            list_of_states.append([trader, close, df, finance, prediction, states, predictor])
-                        list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
-                                                           pd.to_numeric(x[2]['Close']).std()))
-                        trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
-                        print('the best thing to trade looks:', finance.symbol, prediction)
-                        is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-                        if is_done:
-                            predictor.state = new_states[0]
-                            predictor.state_have_money = new_states[1]
-                            predictor.state_last_price_set = new_states[2]
-                            predictor.state_last_buy_price = new_states[3]
-                            predictor.state_max_from_last = new_states[4]
-                            predictor.state_min_from_last = new_states[5]
-                            predictor.state_var1 = new_states[6]
-                            predictor.state_var2 = new_states[7]
-                            predictor.state_var3 = new_states[8]
-                            predictor.state_last_sell_price = new_states[9]
-                            predictor.save()
-                            print('saved!')
-
-                elif len(active_predictors) > 1:
-                    print('WE HAVE TWO DIFFERENT COIN ACTIVE FOR USER:', user)
-                    input('please make it one and then press inter to continue')
-
-                else:
-                    print('we do not have any active coin lets search...')
+    if multi_coin:
+        print('starting multi coin trades')
+        users = User.objects.all()
+        for user in users:
+            print('user works:', user)
+            list_of_states = []
+            active_predictors = []  # predictors which have nonzero state
+            finances = user.finance_set.all()
+            print(finances)
+            for finance in finances:
+                print(finance.symbol)
+                material = Material.objects.get(name=finance.symbol)
+                print(material)
+                predictor = material.predictor_set.get(user_name=user.name)
+                print(predictor)
+                if predictor.state != 0:
+                    active_predictors.append([predictor, finance])
+            if len(active_predictors) == 1:
+                print('user has active coin:', active_predictors)
+                predictor = active_predictors[0][0]
+                finance = active_predictors[0][1]
+                trader = predictor.trader_set.get(user=user)
+                df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
+                close = float(df.tail(1)['Close'])
+                is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
+                if is_done:
+                    predictor.state = new_states[0]
+                    predictor.state_have_money = new_states[1]
+                    predictor.state_last_price_set = new_states[2]
+                    predictor.state_last_buy_price = new_states[3]
+                    predictor.state_max_from_last = new_states[4]
+                    predictor.state_min_from_last = new_states[5]
+                    predictor.state_var1 = new_states[6]
+                    predictor.state_var2 = new_states[7]
+                    predictor.state_var3 = new_states[8]
+                    predictor.state_last_sell_price = new_states[9]
+                    predictor.save()
+                    print('saved!')
+                if new_states[0] == 0:
+                    print('the coin is been sold and dis-activated')
                     for finance in finances:
                         material = Material.objects.get(name=finance.symbol)
-                        predictor = material.predictor_set.get(user_name=user.name)
+                        predictor = material.predictor_set.get(user_name=user.name)[0]
                         trader = predictor.trader_set.get(user=user)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
                         close = float(df.tail(1)['Close'])
                         prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
+                        print('prediction is:', prediction)
                         list_of_states.append([trader, close, df, finance, prediction, states, predictor])
                     list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
                                                        pd.to_numeric(x[2]['Close']).std()))
                     trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
-                    print('going to trader.trade trader and predictor is:', trader, predictor)
+                    print('the best thing to trade looks:', finance.symbol, prediction)
                     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-                    print('is done and new_states are:', is_done, new_states)
                     if is_done:
                         predictor.state = new_states[0]
                         predictor.state_have_money = new_states[1]
@@ -159,8 +124,43 @@ def do_the_job(first=True):
                         predictor.state_last_sell_price = new_states[9]
                         predictor.save()
                         print('saved!')
-            return True
-        else:
+
+            elif len(active_predictors) > 1:
+                print('WE HAVE TWO DIFFERENT COIN ACTIVE FOR USER:', user)
+                input('please make it one and then press inter to continue')
+
+            else:
+                print('we do not have any active coin lets search...')
+                for finance in finances:
+                    material = Material.objects.get(name=finance.symbol)
+                    predictor = material.predictor_set.get(user_name=user.name)
+                    trader = predictor.trader_set.get(user=user)
+                    df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
+                    close = float(df.tail(1)['Close'])
+                    prediction, states = trader.trade(close, df, finance=finance, investigate_mode=True)
+                    list_of_states.append([trader, close, df, finance, prediction, states, predictor])
+                list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
+                                                   pd.to_numeric(x[2]['Close']).std()))
+                trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
+                print('going to trader.trade trader and predictor is:', trader, predictor)
+                is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
+                print('is done and new_states are:', is_done, new_states)
+                if is_done:
+                    predictor.state = new_states[0]
+                    predictor.state_have_money = new_states[1]
+                    predictor.state_last_price_set = new_states[2]
+                    predictor.state_last_buy_price = new_states[3]
+                    predictor.state_max_from_last = new_states[4]
+                    predictor.state_min_from_last = new_states[5]
+                    predictor.state_var1 = new_states[6]
+                    predictor.state_var2 = new_states[7]
+                    predictor.state_var3 = new_states[8]
+                    predictor.state_last_sell_price = new_states[9]
+                    predictor.save()
+                    print('saved!')
+        return True
+    try:
+        if not multi_coin:
             predictors = Predictor.objects.all()
             for predictor in predictors:
                 df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
