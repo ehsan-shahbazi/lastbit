@@ -327,7 +327,7 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        quantity = round(quantity, 6)
+        quantity = round(quantity, 4)
         print('quantity and price are:', quantity, stop)
         if quantity > 0.001:
             # print(self.have_btc(symbol=str(self.symbol), close=stop))
@@ -339,8 +339,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:8],
-                    price=str(stop)[0:8])
+                    stopPrice=str(stop)[0:6],
+                    price=str(stop)[0:6])
                 print('order is:', order)
                 order = client.create_order(
                     symbol=str(self.symbol),
@@ -348,8 +348,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:8],
-                    price=str(stop)[0:8])
+                    stopPrice=str(stop)[0:6],
+                    price=str(stop)[0:6])
                 print(order)
             return True
         return False
