@@ -132,7 +132,6 @@ class User(models.Model):
     account = models.IntegerField(default=0, name='account')
     speed = models.IntegerField(default=1, name='speed')
     phone = models.CharField(default='09125459232', name='phone', max_length=11)
-    last_mail_date = models.DateTimeField(name='last_mail_date')
     api_key = models.CharField(max_length=100, name='api_key',
                                default='api_key')
     secret_key = models.CharField(max_length=100, name='secret_key',
