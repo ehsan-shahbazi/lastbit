@@ -148,7 +148,7 @@ class Finance(models.Model):
     # todo: check the order responses to figure out the transactions are done perfectly
 
     def __str__(self):
-        return str(self.user.name) + str(self.symbol)
+        return str(self.user.name) + ' --> ' + str(self.symbol)
 
     def get_time(self):
         client = Client(self.user.api_key, self.user.secret_key)
@@ -392,6 +392,7 @@ class Predictor(models.Model):
     each time you change the predictor change time frame and
     """
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    user_name = models.CharField(name='user_name', default='ehsan', max_length=100)
     model_dir = models.CharField(name='model_dir', default='polls/trained/?.h5', max_length=100)
     i_scale = models.CharField(name='i_scale', default='polls/trained/I_scaler.gz', max_length=100)
     o_scale = models.CharField(name='o_scale', default='polls/trained/O_scaler.gz', max_length=100)

@@ -71,7 +71,7 @@ def do_the_job(first=True):
                     print(finance.symbol)
                     material = Material.objects.get(name=finance.symbol)
                     print(material)
-                    predictor = material.predictor_set.all()[0]
+                    predictor = material.predictor_set.get(user_name=user.name)[0]
                     print(predictor)
                     if predictor.state != 0:
                         active_predictors.append([predictor, finance])
@@ -100,7 +100,7 @@ def do_the_job(first=True):
                         print('the coin is been sold and dis-activated')
                         for finance in finances:
                             material = Material.objects.get(name=finance.symbol)
-                            predictor = material.predictor_set.all()[0]
+                            predictor = material.predictor_set.get(user_name=user.name)[0]
                             trader = predictor.trader_set.get(user=user)
                             df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
                             close = float(df.tail(1)['Close'])
@@ -134,7 +134,7 @@ def do_the_job(first=True):
                     print('we do not have any active coin lets search...')
                     for finance in finances:
                         material = Material.objects.get(name=finance.symbol)
-                        predictor = material.predictor_set.all()[0]
+                        predictor = material.predictor_set.get(user_name=user.name)[0]
                         trader = predictor.trader_set.get(user=user)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
                         close = float(df.tail(1)['Close'])
@@ -196,5 +196,6 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        do_the_job(first=True)
+        input('press enter to do an operation:')
+        do_the_job(first=False)
         time.sleep(1)
