@@ -176,6 +176,9 @@ class Finance(models.Model):
         :return:
         """
         print('buy')
+        if self.have_btc(str(self.symbol), price):
+            print('we have that coin')
+            return True
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
                                                                                 ['locked'])
@@ -205,6 +208,9 @@ class Finance(models.Model):
         """
         print('sell')
         client = Client(self.user.api_key, self.user.secret_key)
+        if not self.have_btc(str(self.symbol), price):
+            print('we have not that coin!')
+            return True
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
@@ -288,6 +294,9 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
                                                                                 ['locked'])
+        if self.have_btc(str(self.symbol), stop):
+            print('we have that!')
+            return True
         quantity = balance * percent / stop
         quantity = round(quantity, 6)
         if quantity > 0.001:
@@ -311,6 +320,9 @@ class Finance(models.Model):
         :param percent: how much of the asset? 100 means all of it
         :return:
         """
+        if not self.have_btc(str(self.symbol), stop):
+            print('we have not that coin!')
+            return True
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
@@ -469,9 +481,10 @@ class Predictor(models.Model):
             state_var1 = self.state_var1
             state_var2 = self.state_var2
             state_var3 = self.state_var3
+            if not have_money:
+                state = 1
             if prices['stop_price'] > new_low:
                 state = 0
-
             if have_money != state_have_money:
                 if have_money:
                     if (prices['stop_price'] > new_low) | (self.state == 0):
