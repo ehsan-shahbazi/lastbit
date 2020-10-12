@@ -179,7 +179,7 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / price
-        quantity = round(quantity, 4)
+        quantity = round(quantity, 2)
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
                 print('order sent for: ', str(self.symbol), quantity)
