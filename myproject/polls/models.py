@@ -182,7 +182,7 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
                                                                                 ['locked'])
-        material = Material.objects.get(name=self.symbol)[0]
+        material = Material.objects.get(name=self.symbol)
         material.price = price
         material.save()
         quantity = balance * percent / price
@@ -217,7 +217,7 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        material = Material.objects.get(name=self.symbol)[0]
+        material = Material.objects.get(name=self.symbol)
         material.price = price
         material.save()
         quantity = round(quantity, int(material.amount_digits))
@@ -304,7 +304,7 @@ class Finance(models.Model):
             print('we have that!')
             return True
         quantity = balance * percent / stop
-        material = Material.objects.get(name=self.symbol)[0]
+        material = Material.objects.get(name=self.symbol)
         material.price = stop
         material.save()
         quantity = round(quantity, int(material.amount_digits))
@@ -337,7 +337,7 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        material = Material.objects.get(name=self.symbol)[0]
+        material = Material.objects.get(name=self.symbol)
         material.price = stop
         material.save()
         quantity = round(quantity, int(material.amount_digits))
