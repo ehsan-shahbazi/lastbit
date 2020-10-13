@@ -190,7 +190,14 @@ def do_the_job(first=True):
 
 
 if __name__ == '__main__':
-    while True:
-        input('pres enter:')
-        do_the_job(first=False)
-        time.sleep(1)
+    debug_mode = input('press d to debug_mode and n to normal trading mode:')
+    if debug_mode == 'd':
+        while True:
+            input('press enter to make a move:')
+            do_the_job(first=False)
+            time.sleep(1)
+    else:
+        while True:
+            do_the_job(first=True)
+            time.sleep(1)
+
