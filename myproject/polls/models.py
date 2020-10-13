@@ -399,7 +399,7 @@ class Material(models.Model):
     persian_name = models.CharField(name='persian_name', max_length=100, default='')
     price = models.FloatField(name="price")
     volume = models.FloatField(name='volume', default=0.0)
-    price_digits = models.IntegerField(name='legal_digits', default=2)
+    price_digits = models.IntegerField(name='price_digits', default=2)
     amount_digits = models.IntegerField(name='amount_digits', default=5)
     update = models.DateTimeField(name='update')
     trading_fee = models.FloatField(name='trading_fee', default=0.01)
