@@ -182,8 +182,11 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
         balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
                                                                                 ['locked'])
+        material = Material.objects.get(name=self.symbol)[0]
+        material.price = price
+        material.save()
         quantity = balance * percent / price
-        quantity = round(quantity, 2)
+        quantity = round(quantity, int(material.amount_digits))
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
                 order = client.create_test_order(
@@ -214,7 +217,10 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        quantity = round(quantity, 6)
+        material = Material.objects.get(name=self.symbol)[0]
+        material.price = price
+        material.save()
+        quantity = round(quantity, int(material.amount_digits))
         print(quantity)
         if quantity > 0.001:
             print('order sent')
@@ -298,7 +304,11 @@ class Finance(models.Model):
             print('we have that!')
             return True
         quantity = balance * percent / stop
-        quantity = round(quantity, 6)
+        material = Material.objects.get(name=self.symbol)[0]
+        material.price = stop
+        material.save()
+        quantity = round(quantity, int(material.amount_digits))
+        stop = round(stop, int(material.price_digits))
         if quantity > 0.001:
             if not self.have_btc(symbol=str(self.symbol), close=stop):
                 order = client.create_order(
@@ -307,8 +317,8 @@ class Finance(models.Model):
                     side=SIDE_BUY,
                     timeInForce='GTC',
                     quantity=quantity,
-                    stopPrice=str(stop)[0:8],
-                    price=str(stop)[0:8])
+                    stopPrice=str(stop),
+                    price=str(stop))
                 print(order)
             return True
         return False
@@ -327,10 +337,13 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                   float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         quantity = balance * percent
-        quantity = round(quantity, 2)
+        material = Material.objects.get(name=self.symbol)[0]
+        material.price = stop
+        material.save()
+        quantity = round(quantity, int(material.amount_digits))
+        stop = round(stop, int(material.price_digits))
         print('quantity and price are:', quantity, stop)
         if quantity > 0.001:
-            # print(self.have_btc(symbol=str(self.symbol), close=stop))
             if self.have_btc(symbol=str(self.symbol), close=stop):
                 print('parameters are:', self.symbol, SIDE_SELL)
                 order = client.create_test_order(
@@ -339,8 +352,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:8],
-                    price=str(stop)[0:8])
+                    stopPrice=str(stop),
+                    price=str(stop))
                 print('test order is:', order)
                 order = client.create_order(
                     symbol=str(self.symbol),
@@ -348,8 +361,8 @@ class Finance(models.Model):
                     type='STOP_LOSS_LIMIT',
                     quantity=quantity,
                     timeInForce='GTC',
-                    stopPrice=str(stop)[0:8],
-                    price=str(stop)[0:8])
+                    stopPrice=str(stop),
+                    price=str(stop))
                 print(order)
             return True
         return False
