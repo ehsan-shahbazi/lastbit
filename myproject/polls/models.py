@@ -341,7 +341,7 @@ class Finance(models.Model):
                     timeInForce='GTC',
                     stopPrice=str(stop)[0:8],
                     price=str(stop)[0:8])
-                print('order is:', order)
+                print('test order is:', order)
                 order = client.create_order(
                     symbol=str(self.symbol),
                     side=SIDE_SELL,
@@ -355,9 +355,7 @@ class Finance(models.Model):
         return False
 
     def cancel_all_orders(self):
-        print('key and secret key are and symbol:', self.user.api_key, self.user.secret_key, self.symbol)
         client = Client(self.user.api_key, self.user.secret_key)
-        print('client is:', client)
         orders = client.get_open_orders()
         if len(orders) > 0:
             print('order list was:', orders[0]['symbol'], orders[0]['price'], orders[0]['type'])
@@ -538,7 +536,7 @@ class Predictor(models.Model):
         return temp[0], new_temp
 
     def __str__(self):
-        return str(self.material) + ' in state: ' + str(self.state)
+        return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
 
 
 class Trader(models.Model):
@@ -601,7 +599,7 @@ class Trader(models.Model):
             speaker = self.user.finance_set.all()[0]
         else:
             speaker = finance
-        print('finding have_btc symbol and close are:', speaker.symbol, close)
+        print('symbol and close are:', speaker.symbol, close)
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
         if investigate_mode:

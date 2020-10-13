@@ -40,7 +40,6 @@ def wait_until(time_stamp, secs=10, time_step=30):
 def re_sample(the_df, method='1H'):
     period = len(the_df)
     ids = pd.period_range('2014-12-01 00:00:00', freq='T', periods=period)
-    # print(the_df['Close'].head())
     the_df[['Open', 'High', 'Close', 'Low']] = the_df[['Open', 'High', 'Close', 'Low']].astype(float)
     df_res = the_df.set_index(ids).resample(method).agg(OrderedDict([('Open', 'first'),
                                                                     ('High', 'max'),
@@ -62,17 +61,14 @@ def do_the_job(first=True):
         print('starting multi coin trades')
         users = User.objects.all()
         for user in users:
+            print('|!|!|!' * 10)
             print('user works:', user)
             list_of_states = []
             active_predictors = []  # predictors which have nonzero state
             finances = user.finance_set.all()
-            print(finances)
             for finance in finances:
-                print(finance.symbol)
                 material = Material.objects.get(name=finance.symbol)
-                print(material)
                 predictor = material.predictor_set.get(user_name=user.name)
-                print(predictor)
                 if predictor.state != 0:
                     active_predictors.append([predictor, finance])
             if len(active_predictors) == 1:
@@ -143,9 +139,7 @@ def do_the_job(first=True):
                 list_of_states.sort(key=lambda x: ((x[4][1]['start_price'] - x[1]) /
                                                    pd.to_numeric(x[2]['Close']).std()))
                 trader, close, df, finance, prediction, states, predictor = tuple(list_of_states[0])
-                print('going to trader.trade trader and predictor is:', trader, predictor)
                 is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-                print('is done and new_states are:', is_done, new_states)
                 if is_done:
                     predictor.state = new_states[0]
                     predictor.state_have_money = new_states[1]
@@ -197,5 +191,6 @@ def do_the_job(first=True):
 
 if __name__ == '__main__':
     while True:
-        do_the_job(first=True)
+        input('pres enter:')
+        do_the_job(first=False)
         time.sleep(1)
