@@ -96,7 +96,7 @@ def do_the_job(first=True):
                     print('the coin is been sold and dis-activated')
                     for finance in finances:
                         material = Material.objects.get(name=finance.symbol)
-                        predictor = material.predictor_set.get(user_name=user.name)[0]
+                        predictor = material.predictor_set.get(user_name=user.name)
                         trader = predictor.trader_set.get(user=user)
                         df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
                         close = float(df.tail(1)['Close'])
