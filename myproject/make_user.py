@@ -21,8 +21,8 @@ def make_user(user_name, multi_coin):
             finance = Finance(user=user, symbol=material.name)
             finance.save()
     else:
-        material = Material.objects.get(name='BTCUSDT')[0]
-        predictor = Predictor(material=material, user_name=user_name, time_frame='15m', input_size=466, type='HIST')
+        material = Material.objects.get(name='BTCUSDT')
+        predictor = Predictor(material=material, user_name=user_name, time_frame='15m', input_size=1000, type='HIST')
         predictor.save()
         trader = Trader(predictor=predictor, user=user, type='1', active=True)
         trader.save()
