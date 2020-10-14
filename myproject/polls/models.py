@@ -376,7 +376,7 @@ class Finance(models.Model):
             print('we have no order')
         for order in orders:
             time.sleep(1)
-            the_answer = client.cancel_order(orderId=order['orderId'])
+            the_answer = client.cancel_order(symbol=orders[0]['symbol'], orderId=order['orderId'])
         return True
 
     def give_ohlcv(self, interval='1m', size=12):
