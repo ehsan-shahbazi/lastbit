@@ -625,11 +625,12 @@ class Trader(models.Model):
                 if have_btc:
                     self.cancel_all(speaker=speaker)
                 else:
-                    self.buy(close, speaker=speaker)
                     self.cancel_all(speaker=speaker)
+                    self.buy(close, speaker=speaker)
                 return True, states
             elif prediction[0] == 'SELL':
                 if have_btc:
+                    self.cancel_all(speaker=speaker)
                     self.sell(close, speaker=speaker)
                 else:
                     self.cancel_all(speaker=speaker)
