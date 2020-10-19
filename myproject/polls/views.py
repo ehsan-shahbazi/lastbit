@@ -21,6 +21,7 @@ def monitor(request):
 
 
 def home(request):
+    print('hi')
     activities = list(Activity.objects.all())
     labels = [i for i in range(len(activities))]
     data = [act.price for act in activities]
