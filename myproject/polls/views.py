@@ -11,6 +11,7 @@ def monitor(request):
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
+
         users_asset.append([str(user.name), str(asset)])
     context = {
         "assets": users_asset
