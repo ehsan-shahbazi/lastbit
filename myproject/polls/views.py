@@ -15,6 +15,7 @@ def monitor(request):
     context = {
         "asset": users_asset
     }
+    print('context is:', context)
     return render(request, 'polls/assets.html', context=context)
 
 
