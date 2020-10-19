@@ -149,6 +149,18 @@ class Finance(models.Model):
     def __str__(self):
         return str(self.user.name) + ' --> ' + str(self.symbol)
 
+    def get_asset_in_usd(self, give_usd=False):
+        client = Client(self.user.api_key, self.user.secret_key)
+        if give_usd:
+            return float(client.get_asset_balance(asset='USDT')['free']) + \
+                   float(client.get_asset_balance(asset='USDT')['locked'])
+        coin = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
+               float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
+        if coin != 0:
+            price = self.get_price()
+            return coin * price
+        return 0
+
     def get_time(self):
         client = Client(self.user.api_key, self.user.secret_key)
         timestamp = client.get_server_time()

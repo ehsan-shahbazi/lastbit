@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Users' assets</title>
+</head>
+<body>
+{% block body-content %}
+    <table style="width:100%">
+        <tr>
+            <th>User_name</th>
+            <th>Asset</th>
+        </tr>
+        {% for user in assets %}
+        <tr>
+            {% for data in user %}
+            <td>{{data}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+</body>
+</html>

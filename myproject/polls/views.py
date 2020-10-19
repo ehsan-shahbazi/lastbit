@@ -1,8 +1,21 @@
 from django.shortcuts import render
-import numpy as np
-from .models import Activity
+from .models import Activity, User
 
 # Create your views here.
+
+
+def monitor(request):
+    users_asset = []
+    for user in User.objects.all():
+        asset = 0
+        for finance in user.finance_set.all():
+            asset += finance.get_asset_in_usd()
+        asset += finance.get_asset_in_usd(give_usd=True)
+        users_asset.append([str(user.name), asset])
+    context = {
+        "asset": users_asset
+    }
+    return render(request, 'polls/assets.html', context=context)
 
 
 def home(request):
