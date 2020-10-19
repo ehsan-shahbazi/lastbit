@@ -12,11 +12,11 @@
             <th>Asset</th>
         </tr>
         {% for user in assets %}
-        <tr>
-            {% for data in user %}
-            <td>{{data}}</td>
-            {% endfor %}
-        </tr>
+            <tr>
+                {% for data in user %}
+                    <td>{{ data }}</td>
+                {% endfor %}
+            </tr>
         {% endfor %}
     </table>
 {% endblock %}

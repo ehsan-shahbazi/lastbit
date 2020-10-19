@@ -11,9 +11,9 @@ def monitor(request):
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
-        users_asset.append([str(user.name), asset])
+        users_asset.append([str(user.name), str(asset)])
     context = {
-        "asset": users_asset
+        "assets": users_asset
     }
     print('context is:', context)
     return render(request, 'polls/assets.html', context=context)
