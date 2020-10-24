@@ -1,8 +1,8 @@
 from django.db import models
 import pandas as pd
 from django.utils import timezone
-import joblib
 import ta
+from django.db.models import Max
 import numpy as np
 from binance.client import Client
 from talib._ta_lib import *
@@ -442,6 +442,12 @@ class Material(models.Model):
     def __str__(self):
         return self.name
 
+    def save_new_signals(self, df):
+        last_signal = self.signal_set.aggregate(Max('time_stamp'))
+        print(last_signal)
+        new_df = df[df['time_stamp'] > last_signal]
+        print(new_df)
+        
 
 class Predictor(models.Model):
     """
@@ -565,6 +571,16 @@ class Predictor(models.Model):
     def __str__(self):
         return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
 
+
+class Signal(models.Model):
+    material = models.ForeignKey(Material, on_delete=models.CASCADE)
+    price = models.FloatField(name='price', default=0)
+    high = models.FloatField(name='high', default=0)
+    low = models.FloatField(name='low', default=0)
+    time_stamp = models.BigIntegerField(name='time_stamp', default=0)
+
+    def __str__(self):
+        return str(self.material.name) + '  ' + str(self.time_stamp)
 
 class Trader(models.Model):
     predictor = models.ForeignKey(Predictor, on_delete=models.CASCADE)
