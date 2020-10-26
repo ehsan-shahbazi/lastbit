@@ -444,9 +444,10 @@ class Material(models.Model):
 
     def save_new_signals(self, df):
         if len(self.signal_set.all()) == 0:
+            print('we have not signals')
             for row in df.itterrows():
                 signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                                low=float(row['Low']), time_stamp=int(row['time_stamp']))
+                                low=float(row['Low']), time_stamp=int(row['Open time']))
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         print(last_signal)
@@ -455,7 +456,7 @@ class Material(models.Model):
         print('adding new informations:')
         for row in new_df.itterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                            low=float(row['Low']), time_stamp=int(row['time_stamp']))
+                            low=float(row['Low']), time_stamp=int(row['Open time']))
             signal.save()
 
 
