@@ -391,7 +391,7 @@ class Finance(models.Model):
             the_answer = client.cancel_order(symbol=order['symbol'], orderId=order['orderId'])
         return True
 
-    def give_ohlcv(self, interval='1m', size=12):
+    def give_ohlcv(self, interval='1m', size=1000):
         """
         :param interval: it can be 1m for 1min and 1h for one hour if you want else, then you should define it.
         :param size: the size of the input size of predictor plus 1
@@ -443,11 +443,21 @@ class Material(models.Model):
         return self.name
 
     def save_new_signals(self, df):
+        if len(self.signal_set.all()) == 0:
+            for row in df.itterrows():
+                signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
+                                low=float(row['Low']), time_stamp=int(row['time_stamp']))
+                signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         print(last_signal)
         new_df = df[df['time_stamp'] > last_signal]
         print(new_df)
-        
+        print('adding new informations:')
+        for row in new_df.itterrows():
+            signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
+                            low=float(row['Low']), time_stamp=int(row['time_stamp']))
+            signal.save()
+
 
 class Predictor(models.Model):
     """
@@ -581,6 +591,16 @@ class Signal(models.Model):
 
     def __str__(self):
         return str(self.material.name) + '  ' + str(self.time_stamp)
+
+
+class Asset(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    tot = models.FloatField(name='tot', default=0)
+    date_time = models.DateTimeField(name='date_time', default=timezone.now)
+
+    def __str__(self):
+        return str(self.user.name) + ' in ' + str(self.date_time)
+
 
 class Trader(models.Model):
     predictor = models.ForeignKey(Predictor, on_delete=models.CASCADE)
