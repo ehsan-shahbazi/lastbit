@@ -452,8 +452,8 @@ class Material(models.Model):
                                 low=float(row['Low']), time_stamp=int(row['Open time']))
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
-        print(last_signal)
-        new_df = df[df['time_stamp'] > last_signal['time_stamp__max']]
+        print(last_signal['time_stamp__max'])
+        new_df = df[df['Open time'] > last_signal['time_stamp__max']]
         print(new_df)
         print('adding new informations:')
         for iteration, row in new_df.iterrows():
