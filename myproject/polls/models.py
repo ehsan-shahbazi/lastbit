@@ -446,14 +446,14 @@ class Material(models.Model):
         if len(self.signal_set.all()) == 0:
             print('we have not signals')
             for iteration, row in df.iterrows():
-                print(row)
-                print(row['Close'])
+                # print(row)
+                # print(row['Close'])
                 signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                                 low=float(row['Low']), time_stamp=int(row['Open time']))
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         print(last_signal)
-        new_df = df[df['time_stamp'] > last_signal]
+        new_df = df[df['time_stamp'] > last_signal['time_stamp__max']]
         print(new_df)
         print('adding new informations:')
         for iteration, row in new_df.iterrows():
