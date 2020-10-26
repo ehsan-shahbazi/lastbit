@@ -446,6 +446,8 @@ class Material(models.Model):
         if len(self.signal_set.all()) == 0:
             print('we have not signals')
             for row in df.itterrows():
+                print(row)
+                print(row['Close'])
                 signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                                 low=float(row['Low']), time_stamp=int(row['Open time']))
                 signal.save()
