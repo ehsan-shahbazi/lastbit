@@ -418,6 +418,28 @@ class Finance(models.Model):
                                             "Taker buy quote asset volume", "Ignore"])
         return df
 
+    def give_historical_ohlcv(self, interval='1m', size=1000, first_time_stamp=0):
+        client = Client(self.user.api_key, self.user.secret_key)
+        if interval == '1h':
+            my_interval = Client.KLINE_INTERVAL_1HOUR
+        elif interval == '1m':
+            my_interval = Client.KLINE_INTERVAL_1MINUTE
+        elif interval == '5m':
+            my_interval = Client.KLINE_INTERVAL_5MINUTE
+        elif interval == '15m':
+            my_interval = Client.KLINE_INTERVAL_15MINUTE
+        else:
+            return False
+        candles = client.get_historical_klines(symbol=str(self.symbol),
+                                               interval=my_interval,
+                                               start_str=first_time_stamp,
+                                               end_str=first_time_stamp + ((size - 1)*1000*60),
+                                               limit=size)
+        df = pd.DataFrame(candles, columns=["Open time", "Open", "High", "Low", "Close", "Volume", "Close time",
+                                            "Quote asset volume", "Number of trades", "Taker buy base asset volume",
+                                            "Taker buy quote asset volume", "Ignore"])
+        return df
+
 
 class Material(models.Model):
     name = models.CharField(name='name', max_length=100, default='')
@@ -442,7 +464,11 @@ class Material(models.Model):
     def __str__(self):
         return self.name
 
-    def save_new_signals(self, df):
+    def save_new_signals(self, df, give_first_time_stamp=False):
+        if give_first_time_stamp:
+            least_signal = self.signal_set.order_by('time_stamp')
+            return least_signal[0].time_stamp
+
         if len(self.signal_set.all()) == 0:
             print('we have not signals')
             for iteration, row in df.iterrows():
@@ -453,12 +479,7 @@ class Material(models.Model):
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         least_signal = self.signal_set.order_by('time_stamp')
-        # print('last signal is:', last_signal)
-        # print('least signal is:', least_signal[0].time_stamp)
-        # print(last_signal['time_stamp__max'])
         new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
-        # print(new_df)
-        # print('adding new informations:')
         for iteration, row in new_df.iterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                             low=float(row['Low']), time_stamp=int(row['Open time']))
