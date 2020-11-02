@@ -467,7 +467,10 @@ class Material(models.Model):
     def save_new_signals(self, df, give_first_time_stamp=False):
         if give_first_time_stamp:
             least_signal = self.signal_set.order_by('time_stamp')
-            return least_signal[0].time_stamp
+            if len(least_signal) != 0:
+                return least_signal[0].time_stamp
+            else:
+                return 0
 
         if len(self.signal_set.all()) == 0:
             print('we have not signals')
