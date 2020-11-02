@@ -53,7 +53,7 @@ def do_the_job(first=True):
             material = Material.objects.get(name=finance.symbol)
             first_time_stamp = material.save_new_signals(df=None, give_first_time_stamp=True)
             print('first time stamp is:', first_time_stamp)
-            df = finance.give_historical_ohlcv(first_time_stamp=first_time_stamp - (999 * 1000 * 60))
+            df = finance.give_historical_ohlcv(first_time_stamp=0)# first_time_stamp - (999 * 1000 * 60))
             print(df.head())
             material.save_new_signals(df)
         print('all the assets and signals are saved')

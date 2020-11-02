@@ -482,10 +482,9 @@ class Material(models.Model):
         new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
         for iteration, row in new_df.iterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                            low=float(row['Low']), time_stamp=int(row['Open time']))
+                            low=float(row['Low']), volumn=float(row['Volume']), time_stamp=int(row['Open time']))
             signal.save()
         return least_signal[0].time_stamp
-
 
 
 class Predictor(models.Model):
@@ -616,6 +615,7 @@ class Signal(models.Model):
     price = models.FloatField(name='price', default=0)
     high = models.FloatField(name='high', default=0)
     low = models.FloatField(name='low', default=0)
+    volume = models.FloatField(name='volume', default=0.0)
     time_stamp = models.BigIntegerField(name='time_stamp', default=0)
 
     def __str__(self):
