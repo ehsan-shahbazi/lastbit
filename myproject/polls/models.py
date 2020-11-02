@@ -473,19 +473,14 @@ class Material(models.Model):
                 return 0
 
         if len(self.signal_set.all()) == 0:
-            print('we have not signals')
             for iteration, row in df.iterrows():
-                # print(row)
-                # print(row['Close'])
                 signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                                low=float(row['Low']), time_stamp=int(row['Open time']))
+                                low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         least_signal = self.signal_set.order_by('time_stamp')
         new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
         for iteration, row in new_df.iterrows():
-            print(float(row['Volume']))
-            input()
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                             low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
             signal.save()
