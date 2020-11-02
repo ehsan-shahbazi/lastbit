@@ -452,6 +452,10 @@ class Material(models.Model):
                                 low=float(row['Low']), time_stamp=int(row['Open time']))
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
+        least_signal = self.signal_set.aggregate(MIN('time_stamp'))
+        print('last signal is:', last_signal)
+        print('least signal is:', least_signal)
+        input()
         print(last_signal['time_stamp__max'])
         new_df = df[df['Open time'] > last_signal['time_stamp__max']]
         print(new_df)
