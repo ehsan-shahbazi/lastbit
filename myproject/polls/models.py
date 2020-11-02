@@ -453,17 +453,18 @@ class Material(models.Model):
                 signal.save()
         last_signal = self.signal_set.aggregate(Max('time_stamp'))
         least_signal = self.signal_set.order_by('time_stamp')
-        print('last signal is:', last_signal)
-        print('least signal is:', least_signal[0].time_stamp)
-        print(last_signal['time_stamp__max'])
-        input()
-        new_df = df[df['Open time'] > last_signal['time_stamp__max']]
-        print(new_df)
-        print('adding new informations:')
+        # print('last signal is:', last_signal)
+        # print('least signal is:', least_signal[0].time_stamp)
+        # print(last_signal['time_stamp__max'])
+        new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
+        # print(new_df)
+        # print('adding new informations:')
         for iteration, row in new_df.iterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                             low=float(row['Low']), time_stamp=int(row['Open time']))
             signal.save()
+        return least_signal[0].time_stamp
+
 
 
 class Predictor(models.Model):
