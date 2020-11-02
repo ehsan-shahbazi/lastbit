@@ -3,7 +3,6 @@ from requests.exceptions import ReadTimeout, ConnectionError
 from binance.exceptions import BinanceAPIException
 from urllib3.exceptions import ReadTimeoutError
 import os
-import sys
 import django
 import warnings
 warnings.filterwarnings("ignore")
@@ -43,12 +42,8 @@ if __name__ == '__main__':
     if debug_mode == 'd':
         while True:
             input('press enter to make a move: note that all the current signals will be deleted !!!')
-            signals = Signal.objects.all()
-            print('deleting signals:')
-            tot = len(signals)
-            for signal in signals:
-                signal.delete()
-            print('all the signals are deleted')
+            Signal.objects.all().delete()
+            print('there is no more signals')
             do_the_job(first=False)
             time.sleep(1)
     else:
