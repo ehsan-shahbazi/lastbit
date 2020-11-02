@@ -3,6 +3,7 @@ from requests.exceptions import ReadTimeout, ConnectionError
 from binance.exceptions import BinanceAPIException
 from urllib3.exceptions import ReadTimeoutError
 import os
+import sys
 import django
 import warnings
 warnings.filterwarnings("ignore")
@@ -25,6 +26,7 @@ def do_the_job(first=True):
         for finance in finances:
             material = Material.objects.get(name=finance.symbol)
             first_time_stamp = material.save_new_signals(df=None, give_first_time_stamp=True)
+            print(first_time_stamp)
             df = finance.give_historical_ohlcv(first_time_stamp=first_time_stamp - (999 * 1000 * 60))
             material.save_new_signals(df)
         print('all the assets and signals are saved')
@@ -33,9 +35,6 @@ def do_the_job(first=True):
         print('we got an error')
         do_the_job(first=False)
 
-    finally:
-        return True
-
 
 if __name__ == '__main__':
     debug_mode = input('press d to debug_mode and n to normal monitoring mode:')
@@ -43,6 +42,8 @@ if __name__ == '__main__':
         while True:
             input('press enter to make a move: note that all the current signals will be deleted !!!')
             signals = Signal.objects.all()
+            print('deleting signals:')
+            tot = len(signals)
             for signal in signals:
                 signal.delete()
             print('all the signals are deleted')
