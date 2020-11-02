@@ -485,7 +485,7 @@ class Material(models.Model):
         new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
         for iteration, row in new_df.iterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                            low=float(row['Low']), volumn=float(row['Volume']), time_stamp=int(row['Open time']))
+                            low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
             signal.save()
         return least_signal[0].time_stamp
 
