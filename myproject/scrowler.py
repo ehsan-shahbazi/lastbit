@@ -61,8 +61,7 @@ def do_the_job(first=True):
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)
-    finally:
-        return True
+
 
 
 if __name__ == '__main__':
