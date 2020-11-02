@@ -43,8 +43,8 @@ if __name__ == '__main__':
         while True:
             input('press enter to make a move: note that all the current signals will be deleted !!!')
             signals = Signal.objects.all()
-            for signals in signals:
-                signals.delete()
+            for signal in signals:
+                signal.delete()
             print('all the signals are deleted')
             do_the_job(first=False)
             time.sleep(1)
