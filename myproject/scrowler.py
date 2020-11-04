@@ -17,6 +17,11 @@ def do_the_job(first=True):
         time.sleep(10)
     else:
         time.sleep(5)
+    first_time_stamps = {}
+    user = User.objects.get(name='shahbazi')
+    for finance in user.finance_set.all():
+        material = Material.objects.get(name=finance.symbol)
+        first_time_stamps[finance.symbol] = material.save_new_signals(df=None, give_first_time_stamp=True)
 
     try:
         user = User.objects.get(name='shahbazi')
@@ -24,11 +29,12 @@ def do_the_job(first=True):
         finances = user.finance_set.all()
         for finance in finances:
             material = Material.objects.get(name=finance.symbol)
-            first_time_stamp = material.save_new_signals(df=None, give_first_time_stamp=True)
+            first_time_stamp = first_time_stamps[finance.symbol]
             if first_time_stamp != 0:
                 df = finance.give_historical_ohlcv(first_time_stamp=first_time_stamp - (999 * 1000 * 60))
             else:
                 df = finance.give_ohlcv()
+            first_time_stamps[finance.symbol] = first_time_stamps[finance.symbol] - (999 * 1000 * 60)
             print(df.head())
             material.save_new_signals(df)
         print('all the assets and signals are saved')
