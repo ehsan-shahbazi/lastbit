@@ -12,16 +12,11 @@ django.setup()
 from polls.models import User, Material, Signal
 
 
-def do_the_job(first=True):
+def do_the_job(my_first_time_stamps, first=True):
     if first:
         time.sleep(10)
     else:
         time.sleep(5)
-    first_time_stamps = {}
-    user = User.objects.get(name='shahbazi')
-    for finance in user.finance_set.all():
-        material = Material.objects.get(name=finance.symbol)
-        first_time_stamps[finance.symbol] = material.save_new_signals(df=None, give_first_time_stamp=True)
 
     try:
         user = User.objects.get(name='shahbazi')
@@ -29,31 +24,36 @@ def do_the_job(first=True):
         finances = user.finance_set.all()
         for finance in finances:
             material = Material.objects.get(name=finance.symbol)
-            first_time_stamp = first_time_stamps[finance.symbol]
+            first_time_stamp = my_first_time_stamps[finance.symbol]
             if first_time_stamp != 0:
                 df = finance.give_historical_ohlcv(first_time_stamp=first_time_stamp - (999 * 1000 * 60))
             else:
                 df = finance.give_ohlcv()
-            first_time_stamps[finance.symbol] = first_time_stamps[finance.symbol] - (999 * 1000 * 60)
+            my_first_time_stamps[finance.symbol] = my_first_time_stamps[finance.symbol] - (999 * 1000 * 60)
             print(df.head())
             material.save_new_signals(df)
         print('all the assets and signals are saved')
-
+        return my_first_time_stamps
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
-        do_the_job(first=False)
+        do_the_job(my_first_time_stamps, first=False)
 
 
 if __name__ == '__main__':
     debug_mode = input('press d to debug_mode and n to normal monitoring mode:')
+    first_time_stamps = {}
+    my_user = User.objects.get(name='shahbazi')
+    for my_finance in my_user.finance_set.all():
+        my_material = Material.objects.get(name=my_finance.symbol)
+        first_time_stamps[my_finance.symbol] = my_material.save_new_signals(df=None, give_first_time_stamp=True)
+
     if debug_mode == 'd':
         while True:
-            input('press enter to make a move: note that all the current signals will be deleted !!!')
-            # Signal.objects.all().delete()
+            input('press enter to make a move:')
             print('there is no more signals')
-            do_the_job(first=False)
+            first_time_stamps = do_the_job(first_time_stamps, first=False)
             time.sleep(1)
     else:
         while True:
-            do_the_job(first=True)
+            first_time_stamps = do_the_job(first_time_stamps, first=True)
             time.sleep(1)

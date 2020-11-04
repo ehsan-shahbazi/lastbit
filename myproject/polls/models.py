@@ -464,22 +464,31 @@ class Material(models.Model):
     def __str__(self):
         return self.name
 
-    def save_new_signals(self, df, give_first_time_stamp=False):
+    def save_new_signals(self, df, give_first_time_stamp=False, easy_mode=True):
+        """
+        :param df: df is df
+        :param give_first_time_stamp: if true it doe's not save signals but it gives the first time stamp
+        :param easy_mode: if true it would save duplicated rows as well but it's faster
+        :return:
+        """
         if give_first_time_stamp:
             least_signal = self.signal_set.order_by('time_stamp')
             if len(least_signal) != 0:
                 return least_signal[0].time_stamp
             else:
                 return 0
+        if not easy_mode:
+            if len(self.signal_set.all()) == 0:
+                for iteration, row in df.iterrows():
+                    signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
+                                    low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
+                    signal.save()
+            last_signal = self.signal_set.aggregate(Max('time_stamp'))
+            least_signal = self.signal_set.order_by('time_stamp')
+            new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
+        else:
+            new_df = df
 
-        if len(self.signal_set.all()) == 0:
-            for iteration, row in df.iterrows():
-                signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
-                                low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
-                signal.save()
-        last_signal = self.signal_set.aggregate(Max('time_stamp'))
-        least_signal = self.signal_set.order_by('time_stamp')
-        new_df = df[(df['Open time'] > last_signal['time_stamp__max']) | (df['Open time'] < least_signal[0].time_stamp)]
         for iteration, row in new_df.iterrows():
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                             low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
