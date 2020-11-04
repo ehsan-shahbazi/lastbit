@@ -493,7 +493,7 @@ class Material(models.Model):
             signal = Signal(material=self, price=float(row['Close']), high=float(row['High']),
                             low=float(row['Low']), volume=float(row['Volume']), time_stamp=int(row['Open time']))
             signal.save()
-        return least_signal[0].time_stamp
+        return True
 
 
 class Predictor(models.Model):
