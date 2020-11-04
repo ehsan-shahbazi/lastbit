@@ -29,6 +29,7 @@ def do_the_job(first=True):
                 df = finance.give_historical_ohlcv(first_time_stamp=first_time_stamp - (999 * 1000 * 60))
             else:
                 df = finance.give_ohlcv()
+            print(df.head())
             material.save_new_signals(df)
         print('all the assets and signals are saved')
 
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     if debug_mode == 'd':
         while True:
             input('press enter to make a move: note that all the current signals will be deleted !!!')
-            Signal.objects.all().delete()
+            # Signal.objects.all().delete()
             print('there is no more signals')
             do_the_job(first=False)
             time.sleep(1)
