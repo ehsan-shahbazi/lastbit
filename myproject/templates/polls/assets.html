@@ -31,6 +31,36 @@
             </tr>
         {% endfor %}
     </table>
+
+    <div>
+    <canvas id="myChart" width="400" height="150"></canvas>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var chart = new Chart(ctx, {
+        // The type of chart we want to create
+        type: 'line',
+
+        // The data for our dataset
+        data: {
+            labels: {{data_point[2]}},
+            datasets: [
+            {% for data_point in user_asset%}
+                {
+                label: {{data_point[0]}},
+                backgroundColor: 'rgb(255, 99, 132, 0.2)',
+                borderColor: 'rgb(255, 99, 132, 0.8)',
+                data: {{data_point[1]}}
+                },
+            {% endfor %}
+            ]
+        },
+
+        // Configuration options go here
+        options: {}
+        });
+    </script>
+    </div>
+
 {% endblock %}
 </body>
 </html>

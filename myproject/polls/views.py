@@ -5,16 +5,20 @@ from .models import Activity, User
 
 
 def monitor(request):
+    name_asset = []
     users_asset = []
     for user in User.objects.all():
         asset = 0
+        assets = user.asset_set.all()
+        name_asset.append([user.name, [x.tot for x in assets], [i for i in range(len(assets))]])
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
 
         users_asset.append([str(user.name), str(asset)])
     context = {
-        "assets": users_asset
+        "assets": users_asset,
+        "name_asset": name_asset
     }
     print('context is:', context)
     return render(request, 'polls/assets.html', context=context)
@@ -22,6 +26,7 @@ def monitor(request):
 
 def home(request):
     print('hi')
+
     activities = list(Activity.objects.all())
     labels = [i for i in range(len(activities))]
     data = [act.price for act in activities]
