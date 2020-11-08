@@ -36,25 +36,25 @@
     <div>
     <canvas id="myChart" width="400" height="150"></canvas>
     <script>
-        var ctx = document.getElementById('myChart').getContext('2d');
-        var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'line',
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+    type: 'line',
 
-        // The data for our dataset
-        data: {
-            labels: {{labels}},
-            datasets: [{
-                label: {{name}},
-                backgroundColor: 'rgb(255, 99, 132, 0.2)',
-                borderColor: 'rgb(255, 99, 132, 0.8)',
-                data: {{assets}}
-            }]
-        },
+    // The data for our dataset
+    data: {
+        labels: {{labels}},
+        datasets: [{
+            label: {{name}},
+            backgroundColor: 'rgb(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132, 0.8)',
+            data: {{assets}}
+        }]
+    },
 
-        // Configuration options go here
-        options: {}
-        });
+    // Configuration options go here
+    options: {}
+    });
     </script>
     </div>
 {% endblock %}
