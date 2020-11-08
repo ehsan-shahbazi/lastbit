@@ -14,7 +14,7 @@ def monitor(request):
         if user.name == 'mahsa':
             print('hi mahsa')
             name_asset = [x.tot for x in assets]
-            labels = len(assets)
+            labels = [x for x in range(len(assets))]
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
