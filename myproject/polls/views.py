@@ -10,13 +10,15 @@ def monitor(request):
     for user in User.objects.all():
         asset = 0
         assets = user.asset_set.all()
-        name_asset.append([user.name, [x.tot for x in assets], [i for i in range(len(assets))]])
+        name_asset.append([x.tot for x in assets])
+        labels = len(assets)
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
 
         users_asset.append([str(user.name), str(asset)])
     context = {
+        "labels": labels,
         "assets": users_asset,
         "name_asset": name_asset
     }
