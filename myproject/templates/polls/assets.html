@@ -23,7 +23,7 @@
             <th>User_name</th>
             <th>Asset</th>
         </tr>
-        {% for user in assets %}
+        {% for user in final_asset %}
             <tr>
                 {% for data in user %}
                     <td>{{ data }}</td>
@@ -31,7 +31,6 @@
             </tr>
         {% endfor %}
     </table>
-
     <div>
     <canvas id="myChart" width="400" height="150"></canvas>
     <script>
@@ -43,16 +42,12 @@
         // The data for our dataset
         data: {
             labels: {{labels}},
-            datasets: [
-            {% for asset in name_assets%}
-            {
-                label: 'The asset',
+            datasets: [{
+                label: {{name}},
                 backgroundColor: 'rgb(255, 99, 132, 0.2)',
                 borderColor: 'rgb(255, 99, 132, 0.8)',
-                data: {{asset}}
-            },
-            {% endfor %}
-        ]
+                data: {{assets}}
+            }]
         },
 
         // Configuration options go here

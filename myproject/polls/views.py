@@ -7,20 +7,23 @@ from .models import Activity, User
 def monitor(request):
     name_asset = []
     users_asset = []
+    labels = []
     for user in User.objects.all():
         asset = 0
         assets = user.asset_set.all()
-        name_asset.append([x.tot for x in assets])
-        labels = len(assets)
+        if user.name == 'mahsa':
+            name_asset = [x.tot for x in assets]
+            labels = len(assets)
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
         asset += finance.get_asset_in_usd(give_usd=True)
 
         users_asset.append([str(user.name), str(asset)])
     context = {
+        "name": 'Mahsa',
         "labels": labels,
-        "assets": users_asset,
-        "name_asset": name_asset
+        "final_asset": users_asset,
+        "assets": name_asset
     }
     print('context is:', context)
     return render(request, 'polls/assets.html', context=context)
