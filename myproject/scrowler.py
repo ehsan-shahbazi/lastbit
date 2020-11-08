@@ -50,7 +50,7 @@ def save_csv_files():
     for finance in finances:
         material = Material.objects.get(name=finance.symbol)
         pdf = pd.DataFrame(list(material.signal_set.all().values()))
-        pdf.to_csv('./data/{}'.format(str(finance.symbol)))
+        pdf.to_csv('./data/{}'.format(str(finance.symbol) + '.csv'))
 
 
 if __name__ == '__main__':
@@ -67,6 +67,10 @@ if __name__ == '__main__':
             print('there is no more signals')
             first_time_stamps = do_the_job(first_time_stamps, first=False)
             time.sleep(1)
+
+    elif debug_mode == 's':
+        save_csv_files()
+
     else:
         while True:
             first_time_stamps = do_the_job(first_time_stamps, first=True)
