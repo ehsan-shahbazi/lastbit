@@ -12,6 +12,7 @@ def monitor(request):
         asset = 0
         assets = user.asset_set.all()
         if user.name == 'mahsa':
+            print('hi mahsa')
             name_asset = [x.tot for x in assets]
             labels = len(assets)
         for finance in user.finance_set.all():
@@ -25,7 +26,7 @@ def monitor(request):
         "final_asset": users_asset,
         "assets": name_asset
     }
-    print('context is:', context)
+    # print('context is:', context)
     return render(request, 'polls/assets.html', context=context)
 
 
