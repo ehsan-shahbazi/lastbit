@@ -160,6 +160,27 @@ def short_sell(portion):
     return True
 
 
+user = User.objects.get(name='ehsan')
+print('|!|!|!' * 10)
+print('user works:', user)
+list_of_states = []
+active_predictors = []  # predictors which have nonzero state
+finances = user.finance_set.all()
+for finance in finances:
+    material = Material.objects.get(name=finance.symbol)
+    predictor = material.predictor_set.get(user_name=user.name)
+    if predictor.state != 0:
+        active_predictors.append([predictor, finance])
+if len(active_predictors) == 1:
+    print('user has active coin:', active_predictors)
+    predictor = active_predictors[0][0]
+    finance = active_predictors[0][1]
+    trader = predictor.trader_set.get(user=user)
+    df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
+    print('df is:\n', df)
+    close = float(df.tail(1)['Close'])
+    is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
+
 """
 finish_margin()
 short_sell(1)

@@ -61,6 +61,9 @@ def do_the_job(first=True):
         print('starting multi coin trades')
         users = User.objects.all()
         for user in users:
+            if user.name == 'ehsan':
+                continue
+
             print('|!|!|!' * 10)
             print('user works:', user)
             list_of_states = []
