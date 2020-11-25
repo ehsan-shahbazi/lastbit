@@ -4,11 +4,18 @@ from django.utils import timezone
 import ta
 from django.db.models import Max
 import numpy as np
+from binance.enums import *
 from binance.client import Client
 from talib._ta_lib import *
-from binance.enums import *
 import time
+import pickle
 # Create your models here.
+
+
+def round_down(num, digit):
+    if round(num, int(digit)) > num:
+        return round(num, int(digit)) - pow(0.1, int(digit))
+    return round(num, int(digit))
 
 
 def make_all_ta_things(df):
@@ -148,6 +155,142 @@ class Finance(models.Model):
 
     def __str__(self):
         return str(self.user.name) + ' --> ' + str(self.symbol)
+
+    def short_sell(self, portion):
+        """
+        :param portion: what portion of your usdt do you want to use? 0:1
+        important you should just keep usdt in your spot wallet. when doing margin trading
+        important your usdt should be free and the margin wallet should be empty
+        :return: true (if done) or false
+        """
+        client = Client(self.user.api_key, self.user.secret_key)
+
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        print('we have: ', balance, ', in the spot.')
+        coin_symbol = str(self.symbol).replace('USDT', '')
+        if balance > 0:
+            transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
+            print(transaction)
+
+        balance = float(client.get_asset_balance(asset=coin_symbol)['free'])
+        print(balance)
+        if balance > 0:
+            transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
+            print(transaction)
+
+        details = client.get_max_margin_loan(asset=coin_symbol)
+        if float(details['amount']) != 0:
+            # making the loan
+            transaction = client.create_margin_loan(asset=coin_symbol, amount=str(details['amount']))
+            print(transaction)
+        asset_info = client.get_margin_account()
+        print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == coin_symbol])
+        material = Material.objects.get(name='BTCUSDT')
+        asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
+        print('asset is:', asset)
+        quantity = round_down(asset, int(material.amount_digits))
+        order = client.create_margin_order(
+            symbol=str(self.symbol),
+            side=SIDE_SELL,
+            type=ORDER_TYPE_MARKET,
+            quantity=str(quantity)
+        )
+        print(order)
+        return True
+
+    def long_buy(self, portion):
+        """
+        :param portion: what portion of your usdt do you want to use? 0:1
+        important you should just keep usdt in your spot wallet. when doing margin trading
+        important your usdt should be free and the margin wallet should be empty
+        :return: true (if done) or false
+        """
+        client = Client(self.user.api_key, self.user.secret_key)
+
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
+        print('we have: ', balance, ', in the spot.')
+        coin_symbol = str(self.symbol).replace('USDT', '')
+
+        if balance > 0:
+            transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
+            print(transaction)
+        balance = float(client.get_asset_balance(asset=coin_symbol)['free'])
+        print(balance)
+        if balance > 0:
+            transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
+            print(transaction)
+
+        price_info = client.get_margin_price_index(symbol=str(self.symbol))
+        price = float(price_info['price'])
+        print('price is:', price)
+        details = client.get_max_margin_loan(asset='USDT')
+        if float(details['amount']) != 0:
+            transaction = client.create_margin_loan(asset='USDT', amount=str(details['amount']))
+            print(transaction)
+        asset_info = client.get_margin_account()
+        print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
+        material = Material.objects.get(name='BTCUSDT')
+        asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
+        print('asset is:', asset)
+        quantity = round(asset * 0.99 / price, int(material.amount_digits))
+        order = client.create_margin_order(
+            symbol=str(self.symbol),
+            side=SIDE_BUY,
+            type=ORDER_TYPE_MARKET,
+            quantity=str(quantity)
+        )
+        print(order)
+        return True
+
+    def finish_margin(self):
+        client = Client(self.user.api_key, self.user.secret_key)
+        asset_info = client.get_margin_account()
+        loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
+
+        if len(loan) == 1:
+            loan = loan[0]
+            material = Material.objects.get(name=str(self.symbol))
+            price_info = client.get_margin_price_index(symbol=str(self.symbol))
+            price = float(price_info['price'])
+            coin_symbol = str(self.symbol).replace('USDT', '')
+            if loan['asset'] == 'USDT':
+                asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == str(coin_symbol)][0]
+                quantity = round_down(asset, int(material.amount_digits))
+                print([x for x in asset_info['userAssets'] if x['asset'] == str(coin_symbol)][0])
+                print(quantity)
+                order = client.create_margin_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_SELL,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=str(quantity)
+                )
+                print(order)
+
+            elif loan['asset'] == coin_symbol:
+                asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
+                print('asset is:', asset)
+                quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
+                order = client.create_margin_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_BUY,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=str(quantity)
+                )
+                print(order)
+
+            transaction = client.repay_margin_loan(
+                asset=loan['asset'],
+                amount=str(float(loan['borrowed']) + float(loan['interest']))
+            )
+        elif len(loan) > 1:
+            print('we have many loans please check the system')
+            return False
+
+        asset_info = client.get_margin_account()
+        assets = [(x['asset'], x['netAsset']) for x in asset_info['userAssets'] if x['netAsset'] != '0']
+        for asset in assets:
+            transaction = client.transfer_margin_to_spot(asset=asset[0], amount=asset[1])
+        return True
 
     def get_asset_in_usd(self, give_usd=False):
         client = Client(self.user.api_key, self.user.secret_key)
@@ -515,7 +658,7 @@ class Predictor(models.Model):
     lower = models.FloatField(name='lower', default=0)
     state = models.IntegerField(name='state', default=0)
     state_have_money = models.BooleanField(name='state_have_money', default=True)
-    state_last_price_set = models.FloatField(name='state_last_price_set', default=0)  # the last stop loss sat for knowing the
+    state_last_price_set = models.FloatField(name='state_last_price_set', default=0)  # the last stop loss sat
     state_last_sell_price = models.FloatField(name='state_last_sell_price', default=0)
     state_last_buy_price = models.FloatField(name='state_last_buy_price', default=0)
     state_max_from_last = models.FloatField(name='state_max_from_last', default=0)
@@ -596,6 +739,13 @@ class Predictor(models.Model):
             df = make_all_ta_things(df)
             for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
                 inputs.append([data])
+        elif self.type == 'LM':
+            print('making the inputs')
+            df['diff'] = df['Close'] - df['Open']
+            df['label'] = np.where(df['diff'] > 0, 'R', 'D')
+            inputs = df['label'].values.tolist()[-1 * int(self.state_var2):]
+            print(inputs)
+            input('it was the input for ehsan')
         return inputs
 
     def predict(self, df='', gamma=0.65, have_money=True):
@@ -604,16 +754,22 @@ class Predictor(models.Model):
         :param: df: the df should be appropriated for prediction in size and time framing
         :return:
         """
-        out = self.make_inputs(df, have_money=have_money)
-        df = out[0]
-        tree1 = Histogram(df)
-        """
-        (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
-         state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
-        """
-        temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
-        new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
-        return temp[0], new_temp
+        if self.type == 'HIST':
+            out = self.make_inputs(df, have_money=have_money)
+            df = out[0]
+            tree1 = Histogram(df)
+            """
+            (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
+             state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
+            """
+            temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
+            new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
+            return temp[0], new_temp
+        elif self.type == 'LM':
+            print('loading the model and giving the prediction')
+
+            lm = pickle.load(open('lm.p', 'rb'))
+            print(lm.score('R', ('R', 'R', 'R')))
 
     def __str__(self):
         return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
@@ -729,6 +885,9 @@ class Trader(models.Model):
                     print(prediction[1]['start_price'])
                     self.stop_buy(prediction[1]['start_price'], speaker=speaker)
             return True, states
+
+        elif self.predictor.type == 'LM':
+            print('hi we are trying to do LM works.')
 
     def buy(self, close, speaker):
         price = close
