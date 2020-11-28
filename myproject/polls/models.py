@@ -746,7 +746,7 @@ class Predictor(models.Model):
             print('making the inputs')
             df['diff'] = df['Close'] - df['Open']
             df['label'] = np.where(df['diff'] > 0, 'R', 'D')
-            inputs = df['label'].values.tolist()[-1 * int(self.state_var2):]
+            inputs = df['label'].values.tolist()[-1 * int(self.state_var2):]  # state var 2 is len of the input tuple
             print(inputs)
             input('it was the input for ehsan')
         return inputs
@@ -770,12 +770,13 @@ class Predictor(models.Model):
             return temp[0], new_temp
         elif self.type == 'LM':
             print('loading the model and giving the prediction')
-            df['diff'] = df['Close'] - df['Open']
-            df['input'] = np.where(df['diff'] > 0, 'R', 'D')
+            out = self.make_inputs(df)
             print('df is:\n', df)
+            print('out is:\n', out)
 
             lm = pickle.load(open(self.model_dir, 'rb'))
             print(lm.score('R', ('R', 'R', 'R')))
+            print(lm.score('R', out))
             input('continue?')
 
     def __str__(self):
