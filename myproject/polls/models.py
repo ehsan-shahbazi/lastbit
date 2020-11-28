@@ -774,6 +774,7 @@ class Predictor(models.Model):
             print(out)
             lm = pickle.load(open(self.model_dir, 'rb'))
             score = lm.score('R', out)
+            print('score is:', score)
             if score > (0.5 + float(self.state_var1)):  # it is here for confidence
                 return 'BUY', STATE_LM_BUY
             elif score < (0.5 - float(self.state_var1)):
