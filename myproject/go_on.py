@@ -61,9 +61,6 @@ def do_the_job(first=True):
         print('starting multi coin trades')
         users = User.objects.all()
         for user in users:
-            if user.name == 'ehsan':
-                continue
-
             print('|!|!|!' * 10)
             print('user works:', user)
             list_of_states = []
@@ -84,15 +81,16 @@ def do_the_job(first=True):
                 is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
                 if is_done:
                     predictor.state = new_states[0]
-                    predictor.state_have_money = new_states[1]
-                    predictor.state_last_price_set = new_states[2]
-                    predictor.state_last_buy_price = new_states[3]
-                    predictor.state_max_from_last = new_states[4]
-                    predictor.state_min_from_last = new_states[5]
-                    predictor.state_var1 = new_states[6]
-                    predictor.state_var2 = new_states[7]
-                    predictor.state_var3 = new_states[8]
-                    predictor.state_last_sell_price = new_states[9]
+                    if len(new_states) != 1:
+                        predictor.state_have_money = new_states[1]
+                        predictor.state_last_price_set = new_states[2]
+                        predictor.state_last_buy_price = new_states[3]
+                        predictor.state_max_from_last = new_states[4]
+                        predictor.state_min_from_last = new_states[5]
+                        predictor.state_var1 = new_states[6]
+                        predictor.state_var2 = new_states[7]
+                        predictor.state_var3 = new_states[8]
+                        predictor.state_last_sell_price = new_states[9]
                     predictor.save()
                     print('saved!')
                 if new_states[0] == 0:

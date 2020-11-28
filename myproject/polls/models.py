@@ -10,7 +10,9 @@ from talib._ta_lib import *
 import time
 import pickle
 # Create your models here.
-
+STATE_LM_BUY = 6
+STATE_LM_SELL = 7
+STATE_LM_DONT = 5
 
 def round_down(num, digit):
     if round(num, int(digit)) > num:
@@ -771,13 +773,15 @@ class Predictor(models.Model):
         elif self.type == 'LM':
             print('loading the model and giving the prediction')
             out = self.make_inputs(df)
-            print('df is:\n', df)
-            print('out is:\n', out)
-
+            print(out)
             lm = pickle.load(open(self.model_dir, 'rb'))
-            print(lm.score('R', ('R', 'R', 'R')))
-            print(lm.score('R', out))
-            input('continue?')
+            score = lm.score('R', out)
+            if score > (0.5 + float(self.state_var1)):  # it is here for confidence
+                return 'BUY', STATE_LM_BUY
+            elif score < (0.5 - float(self.state_var1)):
+                return 'SELL', STATE_LM_SELL
+            else:
+                return 'DON\'T MOVE!', int(self.state)
 
     def __str__(self):
         return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
@@ -895,7 +899,28 @@ class Trader(models.Model):
             return True, states
 
         elif self.predictor.type == 'LM':
-            print('hi we are trying to do LM works.')
+            if prediction[0] == 'BUY':
+                if int(self.predictor.state) == STATE_LM_BUY:
+                    print('we are already in buy')
+                else:
+                    speaker.finish_margin()
+                    self.margin_buy(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
+
+            if prediction[0] == 'SELL':
+                if int(self.predictor.state) == STATE_LM_SELL:
+                    print('we are already in sell')
+                else:
+                    speaker.finish_margin()
+                    self.margin_sell(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
+
+            if prediction[0] == 'DON\'T MOVE!':
+                if int(self.predictor.state) == STATE_LM_BUY:
+                    speaker.finish_margin()
+                elif int(self.predictor.state) == STATE_LM_DONT:
+                    print('we have no work!')
+                else:
+                    speaker.finish_margin()
+            return True, [prediction[1]]
 
     def buy(self, close, speaker):
         price = close
@@ -928,6 +953,18 @@ class Trader(models.Model):
         self.real_mat_asset = self.real_mat_asset + ((self.real_budget / close) * (1 - mat.trading_fee))
         self.real_budget = 0
         self.save()
+        record = Activity(trader=self, action='sell', date_time=timezone.now(), real=self.active, price=close,
+                          budget=self.real_budget, mat_amount=self.real_mat_asset)
+        record.save()
+
+    def margin_buy(self, portion, speaker, close):
+        speaker.long_buy(portion=portion)
+        record = Activity(trader=self, action='sell', date_time=timezone.now(), real=self.active, price=close,
+                          budget=self.real_budget, mat_amount=self.real_mat_asset)
+        record.save()
+
+    def margin_sell(self, portion, speaker, close):
+        speaker.short_sell(portion=portion)
         record = Activity(trader=self, action='sell', date_time=timezone.now(), real=self.active, price=close,
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
