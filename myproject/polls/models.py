@@ -771,8 +771,9 @@ class Predictor(models.Model):
         elif self.type == 'LM':
             print('loading the model and giving the prediction')
 
-            lm = pickle.load(open('lm.p', 'rb'))
+            lm = pickle.load(open(self.model_dir, 'rb'))
             print(lm.score('R', ('R', 'R', 'R')))
+            input('continue?')
 
     def __str__(self):
         return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
