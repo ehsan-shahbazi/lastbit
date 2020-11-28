@@ -174,8 +174,11 @@ for finance in finances:
 if len(active_predictors) == 1:
     print('user has active coin:', active_predictors)
     predictor = active_predictors[0][0]
+    print('predictor is: ', predictor)
     finance = active_predictors[0][1]
+    print('finance is: ', finance)
     trader = predictor.trader_set.get(user=user)
+    print('trader is: ', trader)
     df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
     print('df is:\n', df)
     close = float(df.tail(1)['Close'])
