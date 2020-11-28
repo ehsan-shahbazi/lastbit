@@ -181,6 +181,7 @@ if len(active_predictors) == 1:
     close = float(df.tail(1)['Close'])
     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
 
+
 """
 finish_margin()
 short_sell(1)
