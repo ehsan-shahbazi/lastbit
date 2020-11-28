@@ -899,28 +899,28 @@ class Trader(models.Model):
             return True, states
 
         elif self.predictor.type == 'LM':
-            if prediction[0] == 'BUY':
+            if prediction == 'BUY':
                 if int(self.predictor.state) == STATE_LM_BUY:
                     print('we are already in buy')
                 else:
                     speaker.finish_margin()
                     self.margin_buy(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
 
-            if prediction[0] == 'SELL':
+            if prediction == 'SELL':
                 if int(self.predictor.state) == STATE_LM_SELL:
                     print('we are already in sell')
                 else:
                     speaker.finish_margin()
                     self.margin_sell(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
 
-            if prediction[0] == 'DON\'T MOVE!':
+            if prediction == 'DON\'T MOVE!':
                 if int(self.predictor.state) == STATE_LM_BUY:
                     speaker.finish_margin()
                 elif int(self.predictor.state) == STATE_LM_DONT:
                     print('we have no work!')
                 else:
                     speaker.finish_margin()
-            return True, [prediction[1]]
+            return True, [states]
 
     def buy(self, close, speaker):
         price = close
