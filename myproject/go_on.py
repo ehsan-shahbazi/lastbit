@@ -80,6 +80,7 @@ def do_the_job(first=True):
                 close = float(df.tail(1)['Close'])
                 is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
                 if is_done:
+                    print('new states is:', new_states)
                     if len(new_states) == 1:
                         predictor.state = new_states[0]
                     if len(new_states) != 1:
