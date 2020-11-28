@@ -770,7 +770,7 @@ class Predictor(models.Model):
             return temp[0], new_temp
         elif self.type == 'LM':
             print('loading the model and giving the prediction')
-
+            print('df is:\n', df)
             lm = pickle.load(open(self.model_dir, 'rb'))
             print(lm.score('R', ('R', 'R', 'R')))
             input('continue?')
