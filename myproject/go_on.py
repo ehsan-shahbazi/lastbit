@@ -53,7 +53,7 @@ def do_the_job(first=True):
     finance = user.finance_set.all()[0]
     timestamp = finance.get_time()
     if first:
-        wait_until(timestamp, secs=30)
+        wait_until(timestamp, secs=50)
     else:
         time.sleep(5)
 
