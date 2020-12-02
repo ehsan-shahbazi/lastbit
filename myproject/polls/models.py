@@ -290,7 +290,7 @@ class Finance(models.Model):
             return False
 
         asset_info = client.get_margin_account()
-        assets = [(x['asset'], x['netAsset']) for x in asset_info['userAssets'] if x['netAsset'] != '0']
+        assets = [(x['asset'], x['netAsset']) for x in asset_info['userAssets'] if float(x['netAsset']) != 0]
         for asset in assets:
             transaction = client.transfer_margin_to_spot(asset=asset[0], amount=asset[1])
         return True
