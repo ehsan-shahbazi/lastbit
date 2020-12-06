@@ -350,6 +350,7 @@ class Finance(models.Model):
         material.save()
         quantity = balance * percent / price
         quantity = round_down(quantity, int(material.amount_digits))
+        print('quantity is: ', quantity)
         if quantity > 0.001:
             if not self.have_btc(str(self.symbol), price):
                 order = client.create_test_order(
@@ -384,7 +385,7 @@ class Finance(models.Model):
         material.price = price
         material.save()
         quantity = round_down(quantity, int(material.amount_digits))
-        print(quantity)
+        print('quantity is: ', quantity)
         if quantity > 0.001:
             print('order sent')
             if self.have_btc(str(self.symbol), price):
@@ -421,7 +422,7 @@ class Finance(models.Model):
         balance = float(client.get_asset_balance(asset='USDT')['free'])
         quantity = balance * percent / limit
         quantity = round_down(quantity, 6)
-        print(quantity)
+        print('quantity is: ', quantity)
         if quantity > 0.001:
             print('order sent')
             if not self.have_btc():
@@ -472,6 +473,8 @@ class Finance(models.Model):
         material.save()
         quantity = round_down(quantity, int(material.amount_digits))
         stop = round_down(stop, int(material.price_digits))
+        print('quantity is: ', quantity)
+        print('stop is: ', stop)
         if quantity > 0.001:
             if not self.have_btc(symbol=str(self.symbol), close=stop):
                 order = client.create_order(
@@ -503,6 +506,7 @@ class Finance(models.Model):
         material = Material.objects.get(name=self.symbol)
         material.price = stop
         material.save()
+        print(quantity, int(material.amount_digits))
         quantity = round_down(quantity, int(material.amount_digits))
         stop = round_down(stop, int(material.price_digits))
         print('quantity and price are:', quantity, stop)
