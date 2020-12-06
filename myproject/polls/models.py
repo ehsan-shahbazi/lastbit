@@ -192,13 +192,14 @@ class Finance(models.Model):
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
         print('asset is:', asset)
         quantity = round_down(asset, int(material.amount_digits))
-        order = client.create_margin_order(
-            symbol=str(self.symbol),
-            side=SIDE_SELL,
-            type=ORDER_TYPE_MARKET,
-            quantity=str(quantity)
-        )
-        print(order)
+        if quantity > 0:
+            order = client.create_margin_order(
+                symbol=str(self.symbol),
+                side=SIDE_SELL,
+                type=ORDER_TYPE_MARKET,
+                quantity=str(quantity)
+            )
+            print(order)
         return True
 
     def long_buy(self, portion):
@@ -236,13 +237,14 @@ class Finance(models.Model):
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
         print('asset is:', asset)
         quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
-        order = client.create_margin_order(
-            symbol=str(self.symbol),
-            side=SIDE_BUY,
-            type=ORDER_TYPE_MARKET,
-            quantity=str(quantity)
-        )
-        print(order)
+        if quantity > 0:
+            order = client.create_margin_order(
+                symbol=str(self.symbol),
+                side=SIDE_BUY,
+                type=ORDER_TYPE_MARKET,
+                quantity=str(quantity)
+            )
+            print(order)
         return True
 
     def finish_margin(self):
@@ -261,25 +263,27 @@ class Finance(models.Model):
                 quantity = round_down(asset, int(material.amount_digits))
                 print([x for x in asset_info['userAssets'] if x['asset'] == str(coin_symbol)][0])
                 print(quantity)
-                order = client.create_margin_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_SELL,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=str(quantity)
-                )
-                print(order)
+                if quantity > 0:
+                    order = client.create_margin_order(
+                        symbol=str(self.symbol),
+                        side=SIDE_SELL,
+                        type=ORDER_TYPE_MARKET,
+                        quantity=str(quantity)
+                    )
+                    print(order)
 
             elif loan['asset'] == coin_symbol:
                 asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
                 print('asset is:', asset)
                 quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
-                order = client.create_margin_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=str(quantity)
-                )
-                print(order)
+                if quantity > 0:
+                    order = client.create_margin_order(
+                        symbol=str(self.symbol),
+                        side=SIDE_BUY,
+                        type=ORDER_TYPE_MARKET,
+                        quantity=str(quantity)
+                    )
+                    print(order)
 
             transaction = client.repay_margin_loan(
                 asset=loan['asset'],
@@ -292,7 +296,8 @@ class Finance(models.Model):
         asset_info = client.get_margin_account()
         assets = [(x['asset'], x['netAsset']) for x in asset_info['userAssets'] if float(x['netAsset']) != 0]
         for asset in assets:
-            transaction = client.transfer_margin_to_spot(asset=asset[0], amount=asset[1])
+            if float(asset[0]) > 0:
+                transaction = client.transfer_margin_to_spot(asset=asset[0], amount=asset[1])
         return True
 
     def get_asset_in_usd(self, give_usd=False):
