@@ -59,8 +59,11 @@ def long_buy(symbol='BTCUSDT', price=18400, percent=1):
 
 def round_down(num, digit):
     if round(num, int(digit)) > num:
-        return round(num, int(digit)) - pow(0.1, int(digit))
+        return round(num, int(digit - 1))
     return round(num, int(digit))
+
+
+print(round_down(0.006054939, 6))
 
 
 def finish_margin():
@@ -159,7 +162,7 @@ def short_sell(portion):
     print(order)
     return True
 
-
+"""
 user = User.objects.get(name='ehsan')
 print('|!|!|!' * 10)
 print('user works:', user)
@@ -180,7 +183,7 @@ if len(active_predictors) == 1:
     print('df is:\n', df)
     close = float(df.tail(1)['Close'])
     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-
+"""
 
 """
 finish_margin()
