@@ -17,6 +17,8 @@ STATE_LM_DONT = 5
 
 def round_down(num, digit):
     if round(num, int(digit)) > num:
+        print('we are trying to make the lower-bound round')
+        print(round(num, int(digit)), pow(0.1, int(digit)), int(digit), num)
         return round(num, int(digit)) - pow(0.1, int(digit))
     return round(num, int(digit))
 
