@@ -15,6 +15,7 @@ from binance.client import Client
 from binance.enums import *
 MIN_ACCEPTABLE_ASSET_USDT = 8
 
+
 def long_buy(symbol='BTCUSDT', price=18400, percent=1):
     user = User.objects.get(name='ehsan')
     print(user)
@@ -65,7 +66,9 @@ def round_down(num, digit):
 
 def finish_margin():
     user = User.objects.get(name='ehsan')
+    print('finish it')
     client = Client(user.api_key, user.secret_key)
+    print('client is', client)
     asset_info = client.get_margin_account()
     loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
     print('loans are: ', loan)
