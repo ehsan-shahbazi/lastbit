@@ -120,7 +120,7 @@ def finish_margin():
     return True
 
 
-def short_sell(portion):
+def short_sell(portion=1):
     """
     :param portion: what portion of your usdt do you want to use? 0:1
     important you should just keep usdt in your spot wallet. when doing margin trading
@@ -163,9 +163,9 @@ def short_sell(portion):
     print(order)
     return True
 
-finish_margin()
-finish_margin()
-finish_margin()
+short_sell()
+short_sell()
+short_sell()
 
 """
 user = User.objects.get(name='ehsan')
