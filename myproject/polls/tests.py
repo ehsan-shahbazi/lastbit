@@ -13,7 +13,7 @@ django.setup()
 from polls.models import User, Material
 from binance.client import Client
 from binance.enums import *
-
+MIN_ACCEPTABLE_ASSET_USDT = 8
 
 def long_buy(symbol='BTCUSDT', price=18400, percent=1):
     user = User.objects.get(name='ehsan')
@@ -63,14 +63,12 @@ def round_down(num, digit):
     return round(num, int(digit))
 
 
-print(round_down(0.006054939, 6))
-
-
 def finish_margin():
     user = User.objects.get(name='ehsan')
     client = Client(user.api_key, user.secret_key)
     asset_info = client.get_margin_account()
     loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
+    print('loans are: ', loan)
     if len(loan) == 1:
         loan = loan[0]
         material = Material.objects.get(name='BTCUSDT')
@@ -95,14 +93,15 @@ def finish_margin():
             asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
             print('asset is:', asset)
             quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
-            if quantity != 0:
-                order = client.create_margin_order(
-                    symbol='BTCUSDT',
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=str(quantity)
-                )
-                print(order)
+            if asset > MIN_ACCEPTABLE_ASSET_USDT:
+                if quantity != 0:
+                    order = client.create_margin_order(
+                        symbol='BTCUSDT',
+                        side=SIDE_BUY,
+                        type=ORDER_TYPE_MARKET,
+                        quantity=str(quantity)
+                    )
+                    print(order)
 
         transaction = client.repay_margin_loan(
             asset=loan['asset'],

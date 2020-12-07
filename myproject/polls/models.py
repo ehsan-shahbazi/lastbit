@@ -277,15 +277,16 @@ class Finance(models.Model):
             elif loan['asset'] == coin_symbol:
                 asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
                 print('asset is:', asset)
-                quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
-                if quantity > 0:
-                    order = client.create_margin_order(
-                        symbol=str(self.symbol),
-                        side=SIDE_BUY,
-                        type=ORDER_TYPE_MARKET,
-                        quantity=str(quantity)
-                    )
-                    print(order)
+                if asset > MIN_ACCEPTABLE_ASSET_USDT:
+                    quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
+                    if quantity > 0:
+                        order = client.create_margin_order(
+                            symbol=str(self.symbol),
+                            side=SIDE_BUY,
+                            type=ORDER_TYPE_MARKET,
+                            quantity=str(quantity)
+                        )
+                        print(order)
 
             transaction = client.repay_margin_loan(
                 asset=loan['asset'],
