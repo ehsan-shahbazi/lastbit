@@ -70,6 +70,7 @@ def finish_margin():
     client = Client(user.api_key, user.secret_key)
     asset_info = client.get_margin_account()
     loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
+    print('loan is:', loan)
     if len(loan) == 1:
         loan = loan[0]
         material = Material.objects.get(name='BTCUSDT')
@@ -93,15 +94,16 @@ def finish_margin():
         elif loan['asset'] == 'BTC':
             asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
             print('asset is:', asset)
-            quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
-            if quantity != 0:
-                order = client.create_margin_order(
-                    symbol='BTCUSDT',
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=str(quantity)
-                )
-                print(order)
+            if asset > MIN_ACCEPTABLE_ASSET:
+                quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
+                if quantity != 0:
+                    order = client.create_margin_order(
+                        symbol='BTCUSDT',
+                        side=SIDE_BUY,
+                        type=ORDER_TYPE_MARKET,
+                        quantity=str(quantity)
+                    )
+                    print(order)
 
         transaction = client.repay_margin_loan(
             asset=loan['asset'],
