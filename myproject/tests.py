@@ -154,14 +154,17 @@ def short_sell(portion=1):
     asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
     print('asset is:', asset)
     quantity = round_down(asset, int(material.amount_digits))
-    order = client.create_margin_order(
-        symbol=str(symbol),
-        side=SIDE_SELL,
-        type=ORDER_TYPE_MARKET,
-        quantity=str(quantity)
-    )
-    print(order)
-    return True
+    if quantity != 0:
+        order = client.create_margin_order(
+            symbol=str(symbol),
+            side=SIDE_SELL,
+            type=ORDER_TYPE_MARKET,
+            quantity=str(quantity)
+        )
+        print(order)
+        return True
+    return False
+
 
 short_sell()
 short_sell()
