@@ -216,23 +216,18 @@ class Finance(models.Model):
             transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
             print(transaction)
         balance = float(client.get_asset_balance(asset=coin_symbol)['free'])
-        print(balance)
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
-            print(transaction)
 
         price_info = client.get_margin_price_index(symbol=str(self.symbol))
         price = float(price_info['price'])
-        print('price is:', price)
         details = client.get_max_margin_loan(asset='USDT')
         if float(details['amount']) != 0:
             transaction = client.create_margin_loan(asset='USDT', amount=str(details['amount']))
-            print(transaction)
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
         material = Material.objects.get(name='BTCUSDT')
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
-        print('asset is:', asset)
         if asset > MIN_ACCEPTABLE_ASSET_USDT:
             quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
             if quantity > 0:
