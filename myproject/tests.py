@@ -159,7 +159,11 @@ def short_sell(portion):
     print(order)
     return True
 
+long_buy()
+long_buy()
+long_buy()
 
+"""
 user = User.objects.get(name='ehsan')
 print('|!|!|!' * 10)
 print('user works:', user)
@@ -183,7 +187,7 @@ if len(active_predictors) == 1:
     print('df is:\n', df)
     close = float(df.tail(1)['Close'])
     is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-
+"""
 
 """
 finish_margin()
@@ -196,4 +200,6 @@ input('continue?')
 finish_margin()
 
 """
+
+
 
