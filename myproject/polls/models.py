@@ -13,6 +13,7 @@ import pickle
 STATE_LM_BUY = 6
 STATE_LM_SELL = 7
 STATE_LM_DONT = 5
+MIN_ACCEPTABLE_ASSET_USDT = 8
 
 
 def round_down(num, digit):
@@ -236,15 +237,16 @@ class Finance(models.Model):
         material = Material.objects.get(name='BTCUSDT')
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
         print('asset is:', asset)
-        quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
-        if quantity > 0:
-            order = client.create_margin_order(
-                symbol=str(self.symbol),
-                side=SIDE_BUY,
-                type=ORDER_TYPE_MARKET,
-                quantity=str(quantity)
-            )
-            print(order)
+        if asset > MIN_ACCEPTABLE_ASSET_USDT:
+            quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
+            if quantity > 0:
+                order = client.create_margin_order(
+                    symbol=str(self.symbol),
+                    side=SIDE_BUY,
+                    type=ORDER_TYPE_MARKET,
+                    quantity=str(quantity)
+                )
+                print(order)
         return True
 
     def finish_margin(self):

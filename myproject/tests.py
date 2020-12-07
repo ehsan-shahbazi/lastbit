@@ -161,9 +161,9 @@ def short_sell(portion):
     print(order)
     return True
 
-long_buy()
-long_buy()
-long_buy()
+finish_margin()
+finish_margin()
+finish_margin()
 
 """
 user = User.objects.get(name='ehsan')
