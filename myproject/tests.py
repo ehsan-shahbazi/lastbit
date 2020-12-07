@@ -10,6 +10,7 @@ warnings.filterwarnings("ignore")
 file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
+import math
 from polls.models import User, Material
 from binance.client import Client
 from binance.enums import *
@@ -59,10 +60,18 @@ def long_buy(symbol='BTCUSDT', price=18400, percent=1):
     print('margin account info is:\n', [x for x in asset_info['userAssets']])
 
 
-def round_down(num, digit):
-    if round(num, int(digit)) > num:
-        return round(num, int(digit)) - pow(0.1, int(digit))
-    return round(num, int(digit))
+def round_down(number:float, decimals:int=2):
+    """
+    Returns a value rounded down to a specific number of decimal places.
+    """
+    if not isinstance(decimals, int):
+        raise TypeError("decimal places must be an integer")
+    elif decimals < 0:
+        raise ValueError("decimal places has to be 0 or more")
+    elif decimals == 0:
+        return math.floor(number)
+    factor = 10 ** decimals
+    return math.floor(number * factor) / factor
 
 
 def finish_margin():
@@ -174,6 +183,7 @@ long_buy()
 short_sell()
 long_buy()
 finish_margin()
+
 
 """
 user = User.objects.get(name='ehsan')
