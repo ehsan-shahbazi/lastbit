@@ -13,6 +13,7 @@ django.setup()
 from polls.models import User, Material
 from binance.client import Client
 from binance.enums import *
+MIN_ACCEPTABLE_ASSET = 8
 
 
 def long_buy(symbol='BTCUSDT', price=18400, percent=1):
@@ -45,14 +46,15 @@ def long_buy(symbol='BTCUSDT', price=18400, percent=1):
     material = Material.objects.get(name='BTCUSDT')
     asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
     print('asset is:', asset)
-    quantity = round(asset * 0.99 / price, int(material.amount_digits))
-    order = client.create_margin_order(
-        symbol='BTCUSDT',
-        side=SIDE_BUY,
-        type=ORDER_TYPE_MARKET,
-        quantity=str(quantity)
-    )
-    print(order)
+    if asset > MIN_ACCEPTABLE_ASSET:
+        quantity = round(asset * 0.99 / price, int(material.amount_digits))
+        order = client.create_margin_order(
+            symbol='BTCUSDT',
+            side=SIDE_BUY,
+            type=ORDER_TYPE_MARKET,
+            quantity=str(quantity)
+        )
+        print(order)
     asset_info = client.get_margin_account()
     print('margin account info is:\n', [x for x in asset_info['userAssets']])
 
