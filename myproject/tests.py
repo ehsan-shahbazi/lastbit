@@ -165,14 +165,15 @@ def short_sell(portion=1):
         return True
     return False
 
-
+finish_margin()
+finish_margin()
 short_sell()
 long_buy()
 short_sell()
 long_buy()
 short_sell()
 long_buy()
-
+finish_margin()
 
 """
 user = User.objects.get(name='ehsan')
