@@ -167,8 +167,12 @@ def short_sell(portion=1):
 
 
 short_sell()
+long_buy()
 short_sell()
+long_buy()
 short_sell()
+long_buy()
+
 
 """
 user = User.objects.get(name='ehsan')

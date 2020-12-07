@@ -170,28 +170,24 @@ class Finance(models.Model):
         client = Client(self.user.api_key, self.user.secret_key)
 
         balance = float(client.get_asset_balance(asset='USDT')['free'])
-        print('we have: ', balance, ', in the spot.')
+        print('we have: ', balance, ' of usd, in the spot.')
         coin_symbol = str(self.symbol).replace('USDT', '')
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
-            print(transaction)
 
         balance = float(client.get_asset_balance(asset=coin_symbol)['free'])
-        print(balance)
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
-            print(transaction)
 
         details = client.get_max_margin_loan(asset=coin_symbol)
         if float(details['amount']) != 0:
-            # making the loan
+            print('we want to make ', details['amount'], ' loan of btc')
             transaction = client.create_margin_loan(asset=coin_symbol, amount=str(details['amount']))
-            print(transaction)
+
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == coin_symbol])
         material = Material.objects.get(name='BTCUSDT')
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
-        print('asset is:', asset)
         quantity = round_down(asset, int(material.amount_digits))
         if quantity > 0:
             order = client.create_margin_order(
