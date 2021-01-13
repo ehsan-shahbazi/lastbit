@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from .models import Activity, User, Predictor
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -74,6 +75,6 @@ def signal(request):
     for predictor in Predictor.objects.all():
         if predictor.user_name == 'mahsa':
             if predictor.state == 1:
-                return 'buy'
+                return JsonResponse({'Signal': 'buy'})
             else:
-                return 'sell'
+                return JsonResponse({'Signal': 'sell'})
