@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Activity, User
+from .models import Activity, User, Predictor
 
 # Create your views here.
 
@@ -68,3 +68,12 @@ def home(request):
         "asset": asset
     }
     return render(request, 'polls/plots.html', context=context)
+
+
+def signal(request):
+    for predictor in Predictor.objects.all():
+        if predictor.user_name == 'mahsa':
+            if predictor.state == 1:
+                return 'buy'
+            else:
+                return 'sell'
