@@ -75,6 +75,6 @@ def signal(request):
     for predictor in Predictor.objects.all():
         if predictor.user_name == 'mahsa':
             if predictor.state == 1:
-                return JsonResponse({'Signal': 'buy'})
+                return JsonResponse({'Signal': 'buy', 'stop_sell_price': predictor.state_last_price_set})
             else:
-                return JsonResponse({'Signal': 'sell'})
+                return JsonResponse({'Signal': 'sell', 'stop_buy_price': predictor.state_last_price_set})
