@@ -10,13 +10,12 @@ from talib._ta_lib import *
 import time
 import pickle
 # Create your models here.
-STATE_LM_BUY = 6
-STATE_LM_SELL = 7
-STATE_LM_DONT = 5
+BUY_ALPHA = 0.98
+SELL_ALPHA = 0.5
 MIN_ACCEPTABLE_ASSET_USDT = 8
 
 
-def round_down(number:float, decimals:int=2):
+def round_down(number: float, decimals: int = 2):
     """
     Returns a value rounded down to a specific number of decimal places.
     """
@@ -54,6 +53,49 @@ def make_all_ta_things(df):
     return ans
 
 
+class MarginalHistogram:
+    def __init__(self, df):
+        """
+        :param df: numeric OHLCV
+        """
+        self.state = 'DON\'T MOVE!'
+        self.prices = list(df['Close'])
+
+    def get_alpha(self):
+        hist = self.prices
+        price = hist[-1]
+        """
+        :param hist: [price1, price2, price3, ...]
+        :param price: current price
+        :param the_strategy: self.strategy
+        :return: 'ACTION', (stop_minus, stop_plus)
+        """
+        pi = 0  # more than current price
+        j = 0  # less than current price
+        tot = len(hist)
+        for index in range(tot):
+            if hist[index] < price:
+                pi += 1
+            else:
+                j += 1
+
+        return pi / tot
+
+    def decision(self, close):
+        alpha = self.get_alpha()
+
+        output = []
+        if alpha >= BUY_ALPHA:
+            output.append('LONG')
+            output.append({})
+
+        if alpha < SELL_ALPHA:
+            output.append('SELL')
+            output.append({})
+
+        return output, close
+
+
 class Histogram:
     def __init__(self, df):
         """
@@ -64,7 +106,7 @@ class Histogram:
         self.highs = list(df['High'])
         self.lows = list(df['Low'])
         self.volumes = list(df['Volume'])
-        self.strategy = [{'STOP': (-0.80, 0.80), 'BUY': (0.99, 1), 'SELL': (0, 0.5)}]
+        self.strategy = [{'STOP': (-0.80, 0.80), 'BUY': (0.99, 1), 'SELL': (0, SELL_ALPHA)}]
 
     def stop_loss(self, start_alpha, stop_alpha):
         hist = self.prices
@@ -100,46 +142,46 @@ class Histogram:
         output = []
         last_price_set = 0
         if state == 0:
-            if alpha >= 0.98:
+            if alpha >= BUY_ALPHA:
                 output.append('BUY')
-                output.append(self.stop_loss(0.98, 0.5))
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
                 last_price_set = price
 
             else:
                 output.append('DON\'T MOVE!')
-                output.append(self.stop_loss(0.98, 0.5))
-                last_price_set = self.stop_loss(0.98, 0.5)['start_price']
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
+                last_price_set = self.stop_loss(BUY_ALPHA, SELL_ALPHA)['start_price']
             return output, last_price_set
 
         elif state == 1:
-            if alpha <= 0.5:
+            if alpha <= SELL_ALPHA:
                 output.append('SELL')
-                output.append(self.stop_loss(0.98, 0.5))
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
                 last_price_set = price
-            elif self.stop_loss(0.98, 0.5)['stop_price'] >= (state_var1 * state_max_from_last):
-                print('we should sell in 0.5')
+            elif self.stop_loss(BUY_ALPHA, SELL_ALPHA)['stop_price'] >= (state_var1 * state_max_from_last):
+                print('we should sell in SELL_ALPHA')
                 output.append('DON\'T MOVE!')
-                output.append(self.stop_loss(0.98, 0.5))
-                last_price_set = self.stop_loss(0.98, 0.5)['stop_price']
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
+                last_price_set = self.stop_loss(BUY_ALPHA, SELL_ALPHA)['stop_price']
             else:
                 output.append('DON\'T MOVE!')
-                output.append({'start_price': self.stop_loss(0.98, 0.5)['start_price'],
+                output.append({'start_price': self.stop_loss(BUY_ALPHA, SELL_ALPHA)['start_price'],
                                'stop_price': state_var1 * state_max_from_last})
                 last_price_set = state_var1 * state_max_from_last
             return output, last_price_set
         elif state == 2:
-            if alpha <= 0.5:
+            if alpha <= SELL_ALPHA:
                 output.append('SELL')
-                output.append(self.stop_loss(0.98, 0.5))
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
                 last_price_set = price
             elif price > state_last_sell_price:
                 output.append('BUY')
-                output.append(self.stop_loss(0.98, 0.5))
+                output.append(self.stop_loss(BUY_ALPHA, SELL_ALPHA))
                 last_price_set = price
             else:
                 output.append('DON\'T MOVE!')
                 output.append({'start_price': state_last_sell_price,
-                               'stop_price': self.stop_loss(0.98, 0.5)['stop_price']})
+                               'stop_price': self.stop_loss(BUY_ALPHA, SELL_ALPHA)['stop_price']})
                 last_price_set = state_last_sell_price
             return output, last_price_set
 
@@ -168,8 +210,9 @@ class Finance(models.Model):
     def __str__(self):
         return str(self.user.name) + ' --> ' + str(self.symbol)
 
-    def short_sell(self, portion):
+    def short_sell(self, portion=1):
         """
+        short sell: loan coin, sell your coin and loaned coin
         :param portion: what portion of your usdt do you want to use? 0:1
         important you should just keep usdt in your spot wallet. when doing margin trading
         important your usdt should be free and the margin wallet should be empty
@@ -177,8 +220,8 @@ class Finance(models.Model):
         """
         client = Client(self.user.api_key, self.user.secret_key)
 
+        # transfer portion of free coin and usd assets into the margin account
         balance = float(client.get_asset_balance(asset='USDT')['free'])
-        print('we have: ', balance, ' of usd, in the spot.')
         coin_symbol = str(self.symbol).replace('USDT', '')
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
@@ -187,6 +230,7 @@ class Finance(models.Model):
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
 
+        # loaning some coin
         details = client.get_max_margin_loan(asset=coin_symbol)
         if float(details['amount']) != 0:
             print('we want to make ', details['amount'], ' loan of btc')
@@ -216,22 +260,26 @@ class Finance(models.Model):
         """
         client = Client(self.user.api_key, self.user.secret_key)
 
+        # transfer to margin account
         balance = float(client.get_asset_balance(asset='USDT')['free'])
-        print('we have: ', balance, ', in the spot.')
-        coin_symbol = str(self.symbol).replace('USDT', '')
-
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset='USDT', amount=str(balance * portion))
-            print(transaction)
+
+        coin_symbol = str(self.symbol).replace('USDT', '')
         balance = float(client.get_asset_balance(asset=coin_symbol)['free'])
         if balance > 0:
             transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * portion))
 
+        # getting price
         price_info = client.get_margin_price_index(symbol=str(self.symbol))
         price = float(price_info['price'])
+
+        # loaning some usd
         details = client.get_max_margin_loan(asset='USDT')
         if float(details['amount']) != 0:
             transaction = client.create_margin_loan(asset='USDT', amount=str(details['amount']))
+
+        # buy coin
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
         material = Material.objects.get(name='BTCUSDT')
@@ -697,28 +745,31 @@ class Predictor(models.Model):
         df['Low'] = pd.to_numeric(df['Low'])
         df['High'] = pd.to_numeric(df['High'])
         df['Volume'] = pd.to_numeric(df['Volume'])
+
+        # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
+        new_high = max(list(df['High'].tail(n=2)))
+        new_low = min(list(df['Low'].tail(n=2)))
+
+        state = self.state
+        state_have_money = self.state_have_money
+        state_last_price_set = self.state_last_price_set
+        state_last_buy_price = self.state_last_buy_price
+        state_max_from_last = self.state_max_from_last
+        state_min_from_last = self.state_min_from_last
+        state_last_sell_price = self.state_last_sell_price
+        state_var1 = self.state_var1
+        state_var2 = self.state_var2
+        state_var3 = self.state_var3
+
         inputs = []
-        if self.type == 'DT':
-            df = ta.add_all_ta_features(df, open="Open", high="High", low="Low", close="Close",
-                                        volume="Volume", fillna=True)
-            for index, data in df.iterrows():
-                inputs.append(list(data))
-        elif self.type == 'HIST':
-            # todo: we should find n and i just set it 2 for 30 minutes for sleep and time framing 15 min
-            new_high = max(list(df['High'].tail(n=2)))
-            new_low = min(list(df['Low'].tail(n=2)))
-            tree1 = Histogram(df)
-            prices = tree1.stop_loss(0.98, 0.5)
-            state = self.state
-            state_have_money = self.state_have_money
-            state_last_price_set = self.state_last_price_set
-            state_last_buy_price = self.state_last_buy_price
-            state_max_from_last = self.state_max_from_last
-            state_min_from_last = self.state_min_from_last
-            state_last_sell_price = self.state_last_sell_price
-            state_var1 = self.state_var1
-            state_var2 = self.state_var2
-            state_var3 = self.state_var3
+
+        if self.type == 'MARGIN_HIST':
+            return (df, (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
+                         state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price))
+
+        if self.type == 'HIST':
+            hist = Histogram(df)
+            prices = hist.stop_loss(BUY_ALPHA, SELL_ALPHA)
             if not have_money:
                 state = 1
             if prices['stop_price'] > new_low:
@@ -752,47 +803,34 @@ class Predictor(models.Model):
             state_have_money = have_money
             return (df, (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
                          state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price))
-        elif self.type == 'MAD':
-            df = make_all_ta_things(df)
-            for data in (df['MACD_SIGNAL3'] - df['Close']) / df['Close']:
-                inputs.append([data])
-        elif self.type == 'LM':
-            print('making the inputs')
-            df['diff'] = df['Close'] - df['Open']
-            df['label'] = np.where(df['diff'] > 0, 'R', 'D')
-            inputs = df['label'].values.tolist()[-1 * int(self.state_var2):]  # state var 2 is len of the input tuple
         return inputs
 
-    def predict(self, df='', gamma=0.65, have_money=True):
+    def predict(self, df='',  have_money=True):
         """
         Inter your code
         :param: df: the df should be appropriated for prediction in size and time framing
         :return:
         """
+
         if self.type == 'HIST':
             out = self.make_inputs(df, have_money=have_money)
             df = out[0]
-            tree1 = Histogram(df)
+            hist = Histogram(df)
             """
             (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
              state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
             """
-            temp = tree1.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
+            temp = hist.decision(out[1][0], out[1][6], out[1][4], out[1][5], out[1][9], out[1][3])
             new_temp = [out[1][0], out[1][1], temp[1], out[1][3], out[1][4], out[1][5], out[1][6], out[1][7], out[1][8], out[1][9]]
             return temp[0], new_temp
-        elif self.type == 'LM':
-            print('loading the model and giving the prediction')
-            out = self.make_inputs(df)
-            print(out)
-            lm = pickle.load(open(self.model_dir, 'rb'))
-            score = lm.score('R', out)
-            print('score is:', score)
-            if score > (0.5 + float(self.state_var1)):  # it is here for confidence
-                return 'BUY', STATE_LM_BUY
-            elif score < (0.5 - float(self.state_var1)):
-                return 'SELL', STATE_LM_SELL
-            else:
-                return 'DON\'T MOVE!', int(self.state)
+
+        elif self.type == 'MARGIN_HIST':
+            df, states = self.make_inputs(df, have_money=have_money)
+            marginal_hist = MarginalHistogram(df=df)
+            decision = marginal_hist.decision(df)
+            new_state = [states[0], states[1], decision[1], states[3], states[4], states[5], states[6], states[7],
+                         states[8], states[9]]
+            return decision, new_state
 
     def __str__(self):
         return str(self.user_name) + ' for ' + str(self.material) + 'is in state: ' + str(self.state)
@@ -910,29 +948,14 @@ class Trader(models.Model):
                     self.stop_buy(prediction[1]['start_price'], speaker=speaker)
             return True, states
 
-        elif self.predictor.type == 'LM':
-            if prediction == 'BUY':
-                if int(self.predictor.state) == STATE_LM_BUY:
-                    print('we are already in buy')
-                else:
-                    speaker.finish_margin()
-                    self.margin_buy(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
-
-            if prediction == 'SELL':
-                if int(self.predictor.state) == STATE_LM_SELL:
-                    print('we are already in sell')
-                else:
-                    speaker.finish_margin()
-                    self.margin_sell(portion=float(self.predictor.state_var3), speaker=speaker, close=close)
-
-            if prediction == 'DON\'T MOVE!':
-                if int(self.predictor.state) == STATE_LM_BUY:
-                    speaker.finish_margin()
-                elif int(self.predictor.state) == STATE_LM_DONT:
-                    print('we have no work!')
-                else:
-                    speaker.finish_margin()
-            return True, [states]
+        elif self.predictor.type == 'MARGIN_HIST':
+            if prediction[0] == 'LONG':
+                self.margin_buy(portion=1, speaker=speaker, close=close)
+                return True, states
+            if prediction[0] == 'SELL':
+                speaker.finish_margin()
+                self.sell(close, speaker=speaker)
+                return True, states
 
     def buy(self, close, speaker):
         price = close

@@ -1,11 +1,7 @@
 import time
-from requests.exceptions import ReadTimeout, ConnectionError
-from binance.exceptions import BinanceAPIException
-from urllib3.exceptions import ReadTimeoutError
 import os
 import django
 import warnings
-import pandas as pd
 warnings.filterwarnings("ignore")
 file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
@@ -15,10 +11,11 @@ from polls.models import User, Material
 from binance.client import Client
 from binance.enums import *
 MIN_ACCEPTABLE_ASSET = 8
+user_name = 'shahbazi'
 
 
-def long_buy(symbol='BTCUSDT', price=18400, percent=1):
-    user = User.objects.get(name='ehsan')
+def long_buy(symbol='BTCUSDT', percent=1):
+    user = User.objects.get(name=user_name)
     print(user)
 
     client = Client(user.api_key, user.secret_key)
@@ -75,7 +72,7 @@ def round_down(number:float, decimals:int=2):
 
 
 def finish_margin():
-    user = User.objects.get(name='ehsan')
+    user = User.objects.get(name=user_name)
     client = Client(user.api_key, user.secret_key)
     asset_info = client.get_margin_account()
     loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
@@ -136,7 +133,7 @@ def short_sell(portion=1):
     important your usdt should be free and the margin wallet should be empty
     :return: true (if done) or false
     """
-    user = User.objects.get(name='ehsan')
+    user = User.objects.get(name=user_name)
     symbol = 'BTCUSDT'
     client = Client(user.api_key, user.secret_key)
     coin_symbol = str(symbol).replace('USDT', '')
@@ -174,54 +171,26 @@ def short_sell(portion=1):
         return True
     return False
 
+
 finish_margin()
 finish_margin()
+short_sell()
+print('first short')
+short_sell()
+print('sec short')
+short_sell()
+print('third short')
+long_buy()
+print('first long')
+long_buy()
+print('second long')
+long_buy()
+print('last long')
+finish_margin()
+print('finishing margin')
+time.sleep(5)
 short_sell()
 long_buy()
 short_sell()
 long_buy()
-short_sell()
-long_buy()
 finish_margin()
-
-
-"""
-user = User.objects.get(name='ehsan')
-print('|!|!|!' * 10)
-print('user works:', user)
-list_of_states = []
-active_predictors = []  # predictors which have nonzero state
-finances = user.finance_set.all()
-for finance in finances:
-    material = Material.objects.get(name=finance.symbol)
-    predictor = material.predictor_set.get(user_name=user.name)
-    if predictor.state != 0:
-        active_predictors.append([predictor, finance])
-if len(active_predictors) == 1:
-    print('user has active coin:', active_predictors)
-    predictor = active_predictors[0][0]
-    print('predictor is: ', predictor)
-    finance = active_predictors[0][1]
-    print('finance is: ', finance)
-    trader = predictor.trader_set.get(user=user)
-    print('trader is: ', trader)
-    df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-    print('df is:\n', df)
-    close = float(df.tail(1)['Close'])
-    is_done, new_states = trader.trade(close, df, finance=finance, investigate_mode=False)
-"""
-
-"""
-finish_margin()
-short_sell(1)
-input('continue?')
-finish_margin()
-input('continue?')
-long_buy()
-input('continue?')
-finish_margin()
-
-"""
-
-
-
