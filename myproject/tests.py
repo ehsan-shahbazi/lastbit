@@ -14,7 +14,7 @@ MIN_ACCEPTABLE_ASSET = 8
 user_name = 'shahbazi'
 
 
-def long_buy(symbol='BTCUSDT', percent=1):
+def long_buy(symbol='ADAUSDT', percent=1):
     user = User.objects.get(name=user_name)
     print(user)
 
@@ -32,7 +32,7 @@ def long_buy(symbol='BTCUSDT', percent=1):
         transaction = client.transfer_spot_to_margin(asset=coin_symbol, amount=str(balance * percent))
         print(transaction)
 
-    price_info = client.get_margin_price_index(symbol='BTCUSDT')
+    price_info = client.get_margin_price_index(symbol='ADAUSDT')
     price = float(price_info['price'])
     print('price is:', price)
     details = client.get_max_margin_loan(asset='USDT')
@@ -41,13 +41,13 @@ def long_buy(symbol='BTCUSDT', percent=1):
         print(transaction)
     asset_info = client.get_margin_account()
     print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
-    material = Material.objects.get(name='BTCUSDT')
+    material = Material.objects.get(name='ADAUSDT')
     asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
     print('asset is:', asset)
     if asset > MIN_ACCEPTABLE_ASSET:
         quantity = round(asset * 0.99 / price, int(material.amount_digits))
         order = client.create_margin_order(
-            symbol='BTCUSDT',
+            symbol='ADAUSDT',
             side=SIDE_BUY,
             type=ORDER_TYPE_MARKET,
             quantity=str(quantity)
@@ -79,32 +79,32 @@ def finish_margin():
     print('loan is:', loan)
     if len(loan) == 1:
         loan = loan[0]
-        material = Material.objects.get(name='BTCUSDT')
-        price_info = client.get_margin_price_index(symbol='BTCUSDT')
+        material = Material.objects.get(name='ADAUSDT')
+        price_info = client.get_margin_price_index(symbol='ADAUSDT')
         price = float(price_info['price'])
 
         if loan['asset'] == 'USDT':
-            asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == str('BTC')][0]
+            asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == str('ADA')][0]
             quantity = round_down(asset, int(material.amount_digits))
-            print([x for x in asset_info['userAssets'] if x['asset'] == str('BTC')][0])
+            print([x for x in asset_info['userAssets'] if x['asset'] == str('ADA')][0])
             print(quantity)
             if quantity != 0:
                 order = client.create_margin_order(
-                    symbol='BTCUSDT',
+                    symbol='ADAUSDT',
                     side=SIDE_SELL,
                     type=ORDER_TYPE_MARKET,
                     quantity=str(quantity)
                 )
                 print(order)
 
-        elif loan['asset'] == 'BTC':
+        elif loan['asset'] == 'ADA':
             asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
             print('asset is:', asset)
             if asset > MIN_ACCEPTABLE_ASSET:
                 quantity = round_down(asset * 0.999 / price, int(material.amount_digits))
                 if quantity != 0:
                     order = client.create_margin_order(
-                        symbol='BTCUSDT',
+                        symbol='ADAUSDT',
                         side=SIDE_BUY,
                         type=ORDER_TYPE_MARKET,
                         quantity=str(quantity)
@@ -134,7 +134,7 @@ def short_sell(portion=1):
     :return: true (if done) or false
     """
     user = User.objects.get(name=user_name)
-    symbol = 'BTCUSDT'
+    symbol = 'ADAUSDT'
     client = Client(user.api_key, user.secret_key)
     coin_symbol = str(symbol).replace('USDT', '')
     balance = float(client.get_asset_balance(asset='USDT')['free'])
@@ -156,7 +156,7 @@ def short_sell(portion=1):
         print(transaction)
     asset_info = client.get_margin_account()
     print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == coin_symbol])
-    material = Material.objects.get(name='BTCUSDT')
+    material = Material.objects.get(name='ADAUSDT')
     asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
     print('asset is:', asset)
     quantity = round_down(asset, int(material.amount_digits))
