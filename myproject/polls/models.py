@@ -62,11 +62,11 @@ class MarginalHistogram:
         output = []
         if alpha >= BUY_ALPHA:
             output.append('LONG')
-            output.append({})
+            output.append({'start_price': close, 'stop_price': close})
 
         if alpha < SELL_ALPHA:
             output.append('SELL')
-            output.append({})
+            output.append({'start_price': close, 'stop_price': close})
 
         return output, close
 
