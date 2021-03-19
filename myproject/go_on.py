@@ -58,6 +58,7 @@ def do_the_job(first=True):
 
     try:
         predictors = Predictor.objects.all()
+        print(predictors)
         for predictor in predictors:
             user = User.objects.get(name=predictor.user_name)
             finance = Finance.objects.get(user=user)
@@ -67,7 +68,7 @@ def do_the_job(first=True):
             traders = predictor.trader_set.all()
             for trader in traders:
                 print(trader.__str__())
-                is_done, states = trader.trade(close, df, finance=finance)
+                is_done, states = trader.trade(close, df, finance)
                 print(f"is_done:{is_done} and states:{states}")
                 if is_done:
                     """

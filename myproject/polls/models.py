@@ -861,26 +861,18 @@ class Trader(models.Model):
     def __str__(self):
         return str(self.predictor.material.name) + '---' + str(self.predictor.time_frame) + '---' + str(self.user.name)
 
-    def trade(self, close, df='', finance=None, investigate_mode=False):
+    def trade(self, close, df, speaker):
         """
         :param close:
         :param df:
-        :param finance: if none it will use the first finance in finance set of the user
-        :param investigate_mode: if true we don't apply real actions
+        :param speaker: if none it will use the first finance in finance set of the user
         :return: investigate mode: return prediction, states
         else: return True, states
         """
-
-        if not finance:
-            speaker = self.user.finance_set.all()[0]
-        else:
-            speaker = finance
         print('symbol and close are:', speaker.symbol, close)
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
         print(prediction, states)
-        if investigate_mode:
-            return prediction, states
 
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
