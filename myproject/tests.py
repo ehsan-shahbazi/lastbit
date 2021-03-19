@@ -10,7 +10,7 @@ import math
 from polls.models import User, Material
 from binance.client import Client
 from binance.enums import *
-MIN_ACCEPTABLE_ASSET = 8
+MIN_ACCEPTABLE_ASSET = 20
 user_name = 'shahbazi'
 
 
