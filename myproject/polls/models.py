@@ -58,7 +58,7 @@ class MarginalHistogram:
 
     def decision(self, close):
         alpha = self.get_alpha()
-
+        print(f"alpha is : {alpha}")
         output = []
         if alpha >= BUY_ALPHA:
             output.append('LONG')
@@ -899,13 +899,15 @@ class Trader(models.Model):
             return True, states
 
         elif self.predictor.type == 'MARGIN_HIST':
-            if prediction[0] == 'LONG':
-                self.margin_buy(portion=1, speaker=speaker, close=close)
-                return True, states
-            if prediction[0] == 'SELL':
-                speaker.finish_margin()
-                self.sell(close, speaker=speaker)
-                return True, states
+            if prediction:
+                if prediction[0] == 'LONG':
+                    self.margin_buy(portion=1, speaker=speaker, close=close)
+                    return True, states
+                if prediction[0] == 'SELL':
+                    speaker.finish_margin()
+                    self.sell(close, speaker=speaker)
+                    return True, states
+            return True, states
 
     def buy(self, close, speaker):
         price = close
