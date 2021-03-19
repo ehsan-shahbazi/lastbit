@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
-from polls.models import User, Predictor, Material
+from polls.models import User, Predictor, Material, Finance
 
 
 def wait_until(time_stamp, secs=10, time_step=30):
@@ -59,12 +59,16 @@ def do_the_job(first=True):
     try:
         predictors = Predictor.objects.all()
         for predictor in predictors:
+            user = User.objects.get(name=predictor.user_name)
+            finance = Finance.objects.get(user=user)
             df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
             last = df.tail(1)
             close = float(last['Close'])
             traders = predictor.trader_set.all()
             for trader in traders:
-                is_done, states = trader.trade(close, df)
+                print(trader.__str__())
+                is_done, states = trader.trade(close, df, finance=finance)
+                print(f"is_done:{is_done} and states:{states}")
                 if is_done:
                     """
                     (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
