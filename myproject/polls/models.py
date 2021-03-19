@@ -35,6 +35,7 @@ class MarginalHistogram:
         """
         self.state = 'DON\'T MOVE!'
         self.prices = list(df['Close'])
+        self.close = self.prices[-1]
 
     def get_alpha(self):
         hist = self.prices
@@ -56,19 +57,18 @@ class MarginalHistogram:
 
         return pi / tot
 
-    def decision(self, close):
+    def decision(self):
         alpha = self.get_alpha()
         print(f"alpha is : {alpha}")
         output = []
         if alpha >= BUY_ALPHA:
             output.append('LONG')
-            output.append({'start_price': close, 'stop_price': close})
+            output.append({'start_price': None, 'stop_price': None})
 
         if alpha < SELL_ALPHA:
             output.append('SELL')
-            output.append({'start_price': close, 'stop_price': close})
-
-        return output, close
+            output.append({'start_price': None, 'stop_price': None})
+        return output, self.close
 
 
 class Histogram:
@@ -785,7 +785,7 @@ class Predictor(models.Model):
         elif self.type == 'MARGIN_HIST':
             df, states = self.make_inputs(df, have_money=have_money)
             marginal_hist = MarginalHistogram(df=df)
-            decision = marginal_hist.decision(df)
+            decision = marginal_hist.decision()
             new_state = [states[0], states[1], decision[1], states[3], states[4], states[5], states[6], states[7],
                          states[8], states[9]]
             return decision, new_state
