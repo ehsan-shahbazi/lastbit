@@ -1,7 +1,6 @@
 from django.db import models
 import pandas as pd
 from django.utils import timezone
-import ta
 from django.db.models import Max
 import numpy as np
 from binance.enums import *
@@ -11,8 +10,8 @@ import time
 import pickle
 # Create your models here.
 BUY_ALPHA = 0.98
-SELL_ALPHA = 0.5
-MIN_ACCEPTABLE_ASSET_USDT = 8
+SELL_ALPHA = 0.8
+MIN_ACCEPTABLE_ASSET_USDT = 80
 
 
 def round_down(number: float, decimals: int = 2):
@@ -27,30 +26,6 @@ def round_down(number: float, decimals: int = 2):
         return math.floor(number)
     factor = 10 ** decimals
     return math.floor(number * factor) / factor
-
-
-def make_all_ta_things(df):
-    my_open = np.array(df['Open'])
-    close = np.array(df['Close'])
-    high = np.array(df['High'])
-    low = np.array(df['Low'])
-    volume = np.array(df['Volume'])
-    the_dict = dict()
-    the_dict['Open'] = list(my_open)
-    the_dict['Close'] = list(close)
-    the_dict['High'] = list(high)
-    the_dict['Low'] = list(low)
-    the_dict['Volume'] = list(volume)
-    the_dict['MACD3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[0])
-    the_dict['MACD_SIGNAL3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[1])
-    the_dict['MACD_HIST3'] = list(MACD(close, fastperiod=12, slowperiod=26, signalperiod=1)[2])
-    here = ta.trend.MACD(pd.Series(close), 26, 12, 1).macd_signal()
-    print('we have from ta:')
-    print(here)
-    print('-' * 50)
-    ans = pd.DataFrame.from_dict(the_dict).fillna(0)
-    print(ans)
-    return ans
 
 
 class MarginalHistogram:
@@ -284,16 +259,15 @@ class Finance(models.Model):
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
         material = Material.objects.get(name='BTCUSDT')
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
-        if asset > MIN_ACCEPTABLE_ASSET_USDT:
-            quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
-            if quantity > 0:
-                order = client.create_margin_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=str(quantity)
-                )
-                print(order)
+        quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
+        if quantity * price > MIN_ACCEPTABLE_ASSET_USDT:
+            order = client.create_margin_order(
+                symbol=str(self.symbol),
+                side=SIDE_BUY,
+                type=ORDER_TYPE_MARKET,
+                quantity=str(quantity)
+            )
+            print(order)
         return True
 
     def finish_margin(self):
@@ -393,28 +367,20 @@ class Finance(models.Model):
             print('we have that coin')
             return True
         client = Client(self.user.api_key, self.user.secret_key)
-        balance = float(client.get_asset_balance(asset='USDT')['free']) + float(client.get_asset_balance(asset='USDT')
-                                                                                ['locked'])
+        balance = float(client.get_asset_balance(asset='USDT')['free'])
         material = Material.objects.get(name=self.symbol)
         material.price = price
         material.save()
         quantity = balance * percent / price
         quantity = round_down(quantity, int(material.amount_digits))
         print('quantity is: ', quantity)
-        if quantity > 0.001:
-            if not self.have_btc(str(self.symbol), price):
-                order = client.create_test_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=quantity)
-                print(order)
-                order = client.create_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_BUY,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=quantity)
-                print(order)
+        if quantity * price > MIN_ACCEPTABLE_ASSET_USDT:
+            order = client.create_order(
+                symbol=str(self.symbol),
+                side=SIDE_BUY,
+                type=ORDER_TYPE_MARKET,
+                quantity=quantity)
+            print(order)
         return True
 
     def sell(self, price, percent=0.95):
@@ -428,29 +394,21 @@ class Finance(models.Model):
         if not self.have_btc(str(self.symbol), price):
             print('we have not that coin!')
             return True
-        balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
-                  float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
+        balance = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free'])
         quantity = balance * percent
         material = Material.objects.get(name=self.symbol)
         material.price = price
         material.save()
         quantity = round_down(quantity, int(material.amount_digits))
         print('quantity is: ', quantity)
-        if quantity > 0.001:
+        if quantity * price > MIN_ACCEPTABLE_ASSET_USDT:
             print('order sent')
-            if self.have_btc(str(self.symbol), price):
-                order = client.create_test_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_SELL,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=quantity)
-                print(order)
-                order = client.create_order(
-                    symbol=str(self.symbol),
-                    side=SIDE_SELL,
-                    type=ORDER_TYPE_MARKET,
-                    quantity=quantity)
-                print(order)
+            order = client.create_order(
+                symbol=str(self.symbol),
+                side=SIDE_SELL,
+                type=ORDER_TYPE_MARKET,
+                quantity=quantity)
+            print(order)
         return True
 
     def get_price(self):
