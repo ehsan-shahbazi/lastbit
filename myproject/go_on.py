@@ -69,7 +69,7 @@ def do_the_job(first=True):
             for trader in traders:
                 print(trader.__str__())
                 is_done, states = trader.trade(close, df, finance)
-                print(f"is_done:{is_done} and states:{states}")
+                print(f"is_done:{is_done} and states:{states[1:]}")
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)
