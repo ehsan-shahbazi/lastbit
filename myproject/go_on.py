@@ -61,15 +61,14 @@ def do_the_job(first=True):
         print(predictors)
         for predictor in predictors:
             user = User.objects.get(name=predictor.user_name)
+            print(user)
             finance = Finance.objects.get(user=user)
             df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
             last = df.tail(1)
             close = float(last['Close'])
             traders = predictor.trader_set.all()
             for trader in traders:
-                print(trader.__str__())
-                is_done, states = trader.trade(close, df, finance)
-                print(f"is_done:{is_done} and states:{states[1:]}")
+                trader.trade(close, df, finance)
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)

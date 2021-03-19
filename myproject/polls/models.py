@@ -872,7 +872,7 @@ class Trader(models.Model):
         print('symbol and close are:', speaker.symbol, close)
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
-        print(prediction, states)
+        print(prediction)
 
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
