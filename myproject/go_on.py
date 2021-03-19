@@ -70,24 +70,6 @@ def do_the_job(first=True):
                 print(trader.__str__())
                 is_done, states = trader.trade(close, df, finance)
                 print(f"is_done:{is_done} and states:{states}")
-                if is_done:
-                    """
-                    (state, state_have_money, state_last_price_set, state_last_buy_price, state_max_from_last,
-                    state_min_from_last, state_var1, state_var2, state_var3, state_last_sell_price)
-                    """
-                    predictor.state = states[0]
-                    predictor.state_have_money = states[1]
-                    predictor.state_last_price_set = states[2]
-                    predictor.state_last_buy_price = states[3]
-                    predictor.state_max_from_last = states[4]
-                    predictor.state_min_from_last = states[5]
-                    predictor.state_var1 = states[6]
-                    predictor.state_var2 = states[7]
-                    predictor.state_var3 = states[8]
-                    predictor.state_last_sell_price = states[9]
-                    predictor.save()
-                    print('saved!')
-            return True
     except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         print('we got an error')
         do_the_job(first=False)
