@@ -901,6 +901,7 @@ class Trader(models.Model):
         elif self.predictor.type == 'MARGIN_HIST':
             if prediction:
                 if prediction[0] == 'LONG':
+                    self.buy(speaker=speaker, close=close)
                     self.margin_buy(portion=1, speaker=speaker, close=close)
                     return True, states
                 if prediction[0] == 'SELL':
