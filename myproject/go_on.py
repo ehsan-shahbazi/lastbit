@@ -58,7 +58,9 @@ def do_the_job(first=True):
 
     predictors = Predictor.objects.all()
     print(predictors)
+
     for predictor in predictors:
+        is_done = False
         try:
             user = User.objects.get(name=predictor.user_name)
             print(user)
@@ -68,14 +70,17 @@ def do_the_job(first=True):
             close = float(last['Close'])
             traders = predictor.trader_set.all()
             for trader in traders:
-                trader.trade(close, df, finance)
+                is_done, new_states = trader.trade(close, df, finance)
 
         except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
             print('we got an error for user:', user)
             continue
 
         finally:
-            print('we got an unusual error for user:', user)
+            if not is_done:
+                print('we got an unusual error for user:', user)
+            else:
+                print('every thing is good for user:', user)
             continue
 
 
