@@ -69,8 +69,13 @@ def do_the_job(first=True):
             traders = predictor.trader_set.all()
             for trader in traders:
                 trader.trade(close, df, finance)
+
         except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
             print('we got an error for user:', user)
+            continue
+
+        finally:
+            print('we got an unusual error for user:', user)
             continue
 
 
