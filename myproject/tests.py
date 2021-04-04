@@ -14,5 +14,5 @@ print(finance)
 
 finance.finish_margin()
 finance.sell(price=finance.get_price())
-finance.buy(price=finance.get_price())
-finance.long_buy(portion=1)
+# finance.buy(price=finance.get_price())
+# finance.long_buy(portion=1)
