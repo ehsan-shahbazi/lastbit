@@ -328,11 +328,10 @@ class Finance(models.Model):
                 transaction = client.transfer_margin_to_spot(asset=asset[0], amount=asset[1])
         return True
 
-    def get_asset_in_usd(self, give_usd=False):
+    def get_asset_in_usd(self):
         client = Client(self.user.api_key, self.user.secret_key)
-        if give_usd:
-            return float(client.get_asset_balance(asset='USDT')['free']) + \
-                   float(client.get_asset_balance(asset='USDT')['locked'])
+        usd = float(client.get_asset_balance(asset='USDT')['free']) +\
+              float(client.get_asset_balance(asset='USDT')['locked'])
         coin = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         if coin != 0:
@@ -416,12 +415,9 @@ class Finance(models.Model):
         return True
 
     def get_price(self):
-        client = Client(self.user.api_key, self.user.secret_key)
-        orders = client.get_all_tickers()
-        for order in orders:
-            if order['symbol'] == self.symbol:
-                return float(order['price'])
-        return False
+        # todo: this is so heavy and slow!
+        material = Material.objects.get(name=self.symbol)
+        return material.price
 
     def buy_limit(self, limit, percent=0.95):
         """
@@ -931,11 +927,7 @@ class Trader(models.Model):
         record.save()
 
     def sell(self, close, speaker):
-        price = speaker.get_price()
-        if price:
-            price = price
-        else:
-            price = close
+        price = close
         if self.active:
             if self.type == '1':
                 speaker.sell(percent=0.95, price=price)
