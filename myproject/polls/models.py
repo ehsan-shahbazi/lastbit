@@ -185,6 +185,10 @@ class Finance(models.Model):
     def __str__(self):
         return str(self.user.name) + ' --> ' + str(self.symbol)
 
+    def get_trades(self):
+        client = Client(self.user.api_key, self.user.secret_key)
+        return client.get_my_trades(symbol=self.symbol)
+
     def short_sell(self, portion=1):
         """
         short sell: loan coin, sell your coin and loaned coin

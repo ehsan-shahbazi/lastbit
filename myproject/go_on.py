@@ -12,7 +12,7 @@ warnings.filterwarnings("ignore")
 file_location = ''
 os.environ["DJANGO_SETTINGS_MODULE"] = 'myproject.settings'
 django.setup()
-from polls.models import User, Predictor, Material, Finance
+from polls.models import User, Predictor, Finance
 
 
 def wait_until(time_stamp, secs=10, time_step=15):
@@ -34,17 +34,6 @@ def wait_until(time_stamp, secs=10, time_step=15):
     else:
         time.sleep(sleep + (60 * time_step))
     return True
-
-
-def re_sample(the_df, method='1H'):
-    period = len(the_df)
-    ids = pd.period_range('2014-12-01 00:00:00', freq='T', periods=period)
-    the_df[['Open', 'High', 'Close', 'Low']] = the_df[['Open', 'High', 'Close', 'Low']].astype(float)
-    df_res = the_df.set_index(ids).resample(method).agg(OrderedDict([('Open', 'first'),
-                                                                    ('High', 'max'),
-                                                                    ('Low', 'min'),
-                                                                    ('Close', ['mean', 'last'])]))
-    return df_res
 
 
 def do_the_job(first=True):
