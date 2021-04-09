@@ -280,6 +280,7 @@ class Finance(models.Model):
         loan = [x for x in asset_info['userAssets'] if x['borrowed'] != '0']
 
         if len(loan) == 1:
+            print('we had a loan')
             loan = loan[0]
             material = Material.objects.get(name=str(self.symbol))
             price_info = client.get_margin_price_index(symbol=str(self.symbol))
@@ -908,7 +909,7 @@ class Trader(models.Model):
                     speaker.finish_margin()
                     self.sell(close, speaker=speaker)
                     return True, states
-            return True, states
+            return False, states
 
     def buy(self, close, speaker):
         price = close
@@ -940,6 +941,7 @@ class Trader(models.Model):
         record = Activity(trader=self, action='sell', date_time=timezone.now(), real=self.active, price=close,
                           budget=self.real_budget, mat_amount=self.real_mat_asset)
         record.save()
+        print('activity saved')
 
     def margin_buy(self, portion, speaker, close):
         speaker.long_buy(portion=portion)
