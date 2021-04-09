@@ -901,15 +901,16 @@ class Trader(models.Model):
 
         elif self.predictor.type == 'MARGIN_HIST':
             if prediction:
-                if prediction[0] == 'LONG':
+                print(prediction[0])
+                if prediction[0][0] == 'LONG':
                     self.buy(speaker=speaker, close=close)
                     self.margin_buy(portion=1, speaker=speaker, close=close)
                     return True, states
-                if prediction[0] == 'SELL':
+                if prediction[0][0] == 'SELL':
                     speaker.finish_margin()
                     self.sell(close, speaker=speaker)
                     return True, states
-                if not prediction[0]:
+                if len(prediction[0]) == 0:
                     return True, states
             return False, states
 
