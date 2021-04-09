@@ -909,6 +909,8 @@ class Trader(models.Model):
                     speaker.finish_margin()
                     self.sell(close, speaker=speaker)
                     return True, states
+                if prediction[0] == '':
+                    return True, states
             return False, states
 
     def buy(self, close, speaker):
