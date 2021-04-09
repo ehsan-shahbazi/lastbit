@@ -59,7 +59,9 @@ def do_the_job(first=True):
         close = float(last['Close'])
         traders = predictor.trader_set.all()
         for trader in traders:
+            print(trader)
             is_done, new_states = trader.trade(close, df, finance)
+            print(is_done)
 
         # except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
         #     print('we got an error for user:', user)
