@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Activity, User, Predictor
+from .models import Activity, User, Predictor, Trader
 from django.http import JsonResponse
 
 # Create your views here.
@@ -78,3 +78,13 @@ def signal(request):
                 return JsonResponse({'Signal': 'buy', 'stop_sell_price': predictor.state_last_price_set})
             else:
                 return JsonResponse({'Signal': 'sell', 'stop_buy_price': predictor.state_last_price_set})
+
+
+def active_predictors(request):
+    user_name = request.GET.get('name', 'mahsa')
+    print(f"username is: {user_name}")
+    traders = {user_name: []}
+    for trader in Trader.objects.all():
+        if trader.user.name == user_name:
+            traders[user_name].append(trader.__str__())
+    return JsonResponse(traders)

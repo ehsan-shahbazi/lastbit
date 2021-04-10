@@ -50,33 +50,30 @@ def do_the_job(first=True):
 
     for predictor in predictors:
         is_done = False
-        # try:
-        user = User.objects.get(name=predictor.user_name)
-        print(user)
-        finance = Finance.objects.get(user=user)
-        df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
-        last = df.tail(1)
-        close = float(last['Close'])
-        material = Material.objects.get(name=finance.symbol)
-        print(material)
-        material.price = close
-        material.save()
-        traders = predictor.trader_set.all()
-        for trader in traders:
-            print(trader)
-            is_done, new_states = trader.trade(close, df, finance)
-            print(is_done)
+        try:
+            user = User.objects.get(name=predictor.user_name)
+            print(user)
+            finance = Finance.objects.get(user=user)
+            df = finance.give_ohlcv(interval=predictor.time_frame, size=predictor.input_size)
+            last = df.tail(1)
+            close = float(last['Close'])
+            material = Material.objects.get(name=finance.symbol)
+            material.price = close
+            material.save()
+            traders = predictor.trader_set.all()
+            for trader in traders:
+                is_done, new_states = trader.trade(close, df, finance)
 
-        # except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
-        #     print('we got an error for user:', user)
-        #     continue
-        #
-        # finally:
-        #     if not is_done:
-        #         print('we got an unusual error for user:', user)
-        #     else:
-        #         print('every thing is good for user:', user)
-        #     continue
+        except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+            print('we got an error for user:', user)
+            continue
+
+        finally:
+            if not is_done:
+                print('we got an unusual error for user:', user)
+            else:
+                print('every thing is good for user:', user)
+            continue
 
 
 if __name__ == '__main__':
