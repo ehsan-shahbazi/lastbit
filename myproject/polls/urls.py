@@ -6,5 +6,6 @@ urlpatterns = [
     path('assets', views.monitor, name='monitor'),
     path('BTCSignal', views.signal, name='BTCSignal'),
     path('user_traders', views.active_predictors, name='user_traders'),
-    path('predictors', views.all_predictors, name='predictors')
+    path('predictors', views.all_predictors, name='predictors'),
+    path('user_trades', views.get_trades, name='user_trades')
 ]
