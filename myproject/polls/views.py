@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Activity, User, Predictor, Trader
+from .models import Activity, User, Predictor, Trader, Finance
 from django.http import JsonResponse
 
 # Create your views here.
@@ -97,3 +97,10 @@ def all_predictors(request):
         if predictor.type not in predictors['predictors']:
             predictors['predictors'].append(predictor.type)
     return JsonResponse(predictors)
+
+
+def get_trades(request):
+    user_name = request.GET.get('name', 'mahsa')
+    user = User.objects.get(name=user_name)
+    finance = Finance.objects.get(user=user)
+    return JsonResponse(finance.get_trades())
