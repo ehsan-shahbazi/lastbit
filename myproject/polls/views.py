@@ -13,14 +13,8 @@ def monitor(request):
     labels = []
     for user in User.objects.all():
         asset = 0
-        assets = user.asset_set.all()
-        if user.name == 'mahsa':
-            print('hi mahsa')
-            name_asset = [int(x.tot) for x in assets]
-            labels = [str(x) for x in range(len(assets))]
         for finance in user.finance_set.all():
             asset += finance.get_asset_in_usd()
-        asset += finance.get_asset_in_usd(give_usd=True)
 
         users_asset.append([str(user.name), str(asset)])
     context = {
