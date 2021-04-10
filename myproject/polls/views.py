@@ -86,5 +86,14 @@ def active_predictors(request):
     traders = {user_name: []}
     for trader in Trader.objects.all():
         if trader.user.name == user_name:
-            traders[user_name].append(trader.__str__())
+            predictor = trader.predictor.type
+            traders[user_name].append([trader.__str__(), predictor])
     return JsonResponse(traders)
+
+
+def all_predictors(request):
+    predictors = {'predictors': []}
+    for predictor in Predictor.objects.all():
+        if predictor.type not in predictors['predictors']:
+            predictors['predictors'].append(predictor.type)
+    return JsonResponse(predictors)
