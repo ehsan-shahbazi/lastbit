@@ -333,7 +333,7 @@ class Finance(models.Model):
 
         client = Client(self.user.api_key, self.user.secret_key)
         margin = client.get_margin_account()
-        print('margin', margin)
+        print('margin', margin['totalNetAssetOfBtc'])
 
         usd = float(client.get_asset_balance(asset='USDT')['free']) +\
               float(client.get_asset_balance(asset='USDT')['locked'])
