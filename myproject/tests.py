@@ -18,7 +18,4 @@ print(finance)
 # finance.buy(price=finance.get_price())
 # finance.long_buy(portion=1)
 print(finance.get_price())
-trades = finance.get_trades()
-print(trades)
-ans = {'trades': trades}
-print(ans)
+print(finance.get_asset_in_usd())

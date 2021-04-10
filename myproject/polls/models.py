@@ -330,7 +330,13 @@ class Finance(models.Model):
         return True
 
     def get_asset_in_usd(self):
+
         client = Client(self.user.api_key, self.user.secret_key)
+        spot = client.get_account_snapshot(type='SPOT')
+        margin = client.get_account_snapshot(type='MARGIN')
+        print('spot', spot)
+        print('margin', margin)
+
         usd = float(client.get_asset_balance(asset='USDT')['free']) +\
               float(client.get_asset_balance(asset='USDT')['locked'])
         coin = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \

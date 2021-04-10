@@ -107,3 +107,5 @@ def get_trades(request):
     finance = Finance.objects.get(user=user)
     trades = finance.get_trades()
     return JsonResponse({'trades': trades})
+
+
