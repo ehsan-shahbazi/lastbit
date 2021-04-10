@@ -20,5 +20,5 @@ print(finance)
 print(finance.get_price())
 trades = finance.get_trades()
 print(trades)
-ans = dict(trades)
+ans = {'trades': trades}
 print(ans)
