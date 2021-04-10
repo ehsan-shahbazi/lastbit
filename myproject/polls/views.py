@@ -109,3 +109,9 @@ def get_trades(request):
     return JsonResponse({'trades': trades})
 
 
+def get_asset(request):
+    user_name = request.GET.get('name', 'mahsa')
+    user = User.objects.get(name=user_name)
+    finance = Finance.objects.get(user=user)
+    asset = finance.get_asset_in_usd()
+    return JsonResponse({'asset': asset})

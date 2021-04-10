@@ -339,7 +339,6 @@ class Finance(models.Model):
         coin = float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['free']) + \
                float(client.get_asset_balance(asset=str(self.symbol).replace('USDT', ''))['locked'])
         btc_price = Material.objects.get(name='BTCUSDT').price
-        print('net_asset is: ', float(margin) * btc_price + coin * self.get_price() + usd)
         return float(margin) * btc_price + coin * self.get_price() + usd
 
     def get_time(self):
