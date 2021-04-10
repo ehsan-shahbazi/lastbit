@@ -1,3 +1,4 @@
+import json
 import time
 import os
 import django
@@ -17,4 +18,6 @@ print(finance)
 # finance.buy(price=finance.get_price())
 # finance.long_buy(portion=1)
 print(finance.get_price())
-print(finance.get_trades())
+trades = finance.get_trades()
+ans = json.load(trades)
+print(ans)

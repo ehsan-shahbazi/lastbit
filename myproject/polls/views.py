@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from .models import Activity, User, Predictor, Trader, Finance
 from django.http import JsonResponse
@@ -103,4 +105,6 @@ def get_trades(request):
     user_name = request.GET.get('name', 'mahsa')
     user = User.objects.get(name=user_name)
     finance = Finance.objects.get(user=user)
-    return JsonResponse(finance.get_trades())
+    trades = finance.get_trades()
+    trades = json.load(trades)
+    return JsonResponse(trades)
