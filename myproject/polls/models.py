@@ -263,7 +263,9 @@ class Finance(models.Model):
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
         material = Material.objects.get(name='BTCUSDT')
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
+
         quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
+        print(f'asset is:{asset} and quantity for price = {price} is {quantity}')
         if quantity * price > MIN_ACCEPTABLE_ASSET_USDT:
             order = client.create_margin_order(
                 symbol=str(self.symbol),
