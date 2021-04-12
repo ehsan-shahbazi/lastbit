@@ -217,7 +217,7 @@ class Finance(models.Model):
 
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == coin_symbol])
-        material = Material.objects.get(name='BTCUSDT')
+        material = Material.objects.get(name=self.symbol)
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == coin_symbol][0]
         quantity = round_down(asset, int(material.amount_digits))
         if quantity > 0:
@@ -261,7 +261,7 @@ class Finance(models.Model):
         # buy coin
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
-        material = Material.objects.get(name='BTCUSDT')
+        material = Material.objects.get(name=self.symbol)
         asset = [float(x['free']) for x in asset_info['userAssets'] if x['asset'] == 'USDT'][0]
 
         quantity = round_down(asset * 0.99 / price, int(material.amount_digits))
