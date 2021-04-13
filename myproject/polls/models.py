@@ -255,9 +255,10 @@ class Finance(models.Model):
 
         # loaning some usd
         details = client.get_max_margin_loan(asset='USDT')
+        print(f"we can borrow {details['amount']} and borrow={float(details['amount']) != 0}")
         if float(details['amount']) != 0:
             transaction = client.create_margin_loan(asset='USDT', amount=str(details['amount']))
-
+        print('we borrowed :)')
         # buy coin
         asset_info = client.get_margin_account()
         print('margin account info is:', [x for x in asset_info['userAssets'] if x['asset'] == 'USDT'])
