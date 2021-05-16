@@ -1,6 +1,6 @@
 import time
 import pandas as pd
-from requests.exceptions import ReadTimeout, ConnectionError
+from requests.exceptions import ReadTimeout, ConnectionError, ConnectTimeout
 from binance.exceptions import BinanceAPIException
 from urllib3.exceptions import ReadTimeoutError
 import os
@@ -15,7 +15,7 @@ django.setup()
 from polls.models import User, Predictor, Finance, Material
 
 
-def wait_until(time_stamp, secs=10, time_step=15):
+def wait_until(time_stamp, secs=10, time_step=5):
     """
     :param time_stamp: coming from the server
     :param secs: how many seconds should we start before new minute starts
@@ -64,7 +64,7 @@ def do_the_job(first=True):
             for trader in traders:
                 is_done, new_states = trader.trade(close, df, finance)
 
-        except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError):
+        except (ReadTimeout, ReadTimeoutError, BinanceAPIException, ConnectionError, ConnectTimeout):
             print('we got an error for user:', user)
             continue
 

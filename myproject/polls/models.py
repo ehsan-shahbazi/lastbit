@@ -878,6 +878,8 @@ class Trader(models.Model):
         have_btc = speaker.have_btc(symbol=speaker.symbol, close=close)
         prediction, states = self.predictor.predict(df, have_money=not have_btc)
         print(prediction)
+        self.predictor.state += 1
+        self.predictor.save()
 
         if self.predictor.type == 'HIST':
             if prediction[0] == 'BUY':
@@ -907,12 +909,18 @@ class Trader(models.Model):
             if prediction:
                 print(prediction[0])
                 if len(prediction[0]) == 0:
+                    self.predictor.state = 0
+                    self.predictor.save()
                     return True, states
                 elif prediction[0][0] == 'LONG':
                     self.buy(speaker=speaker, close=close)
+                    if self.predictor.state > 3:
+                        return True, states
                     self.margin_buy(portion=1, speaker=speaker, close=close)
                     return True, states
                 elif prediction[0][0] == 'SELL':
+                    self.predictor.state = 0
+                    self.predictor.save()
                     speaker.finish_margin()
                     self.sell(close, speaker=speaker)
                     return True, states
